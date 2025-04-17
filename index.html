@@ -3,550 +3,422 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urban Traffic Visualizer</title>
+    <title>Task Manager</title>
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --success-color: #27ae60;
-            --warning-color: #f1c40f;
-            --danger-color: #e74c3c;
-            --background-color: #ecf0f1;
-            --card-background: #ffffff;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: var(--background-color);
-            color: var(--primary-color);
+            background-color: #f5f5f5;
+            color: #333;
             line-height: 1.6;
             padding: 20px;
-        }
-
-        .dashboard-title {
-            text-align: center;
-            margin-bottom: 25px;
-            color: var(--primary-color);
-            font-size: 2.2em;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
-            padding: 0 15px;
         }
 
-        .card {
-            background: var(--card-background);
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .task-form {
+            background-color: #fff;
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .card h2 {
-            color: var(--primary-color);
-            margin-bottom: 15px;
-            font-size: 1.4em;
-            font-weight: 500;
-        }
-
-        canvas {
-            width: 100% !important;
-            height: 300px !important;
             border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
         }
 
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 15px;
-            align-items: center;
+        .task-input {
+            width: 70%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+            margin-right: 10px;
+            transition: border-color 0.3s ease;
         }
 
-        select, input[type="range"], input[type="text"], button {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 0.9em;
-            transition: border-color 0.2s ease;
-        }
-
-        select, input[type="text"] {
-            flex: 1;
-            min-width: 120px;
-        }
-
-        select:focus, input:focus {
+        .task-input:focus {
             outline: none;
-            border-color: var(--secondary-color);
+            border-color: #3498db;
         }
 
-        button {
-            background-color: var(--secondary-color);
+        .add-btn {
+            padding: 10px 20px;
+            background-color: #3498db;
             color: white;
             border: none;
+            border-radius: 4px;
             cursor: pointer;
-            padding: 8px 16px;
-            transition: background-color 0.2s ease;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.1s ease;
         }
 
-        button:hover {
+        .add-btn:hover {
             background-color: #2980b9;
         }
 
-        .table-container {
-            max-height: 300px;
-            overflow-y: auto;
-            border-radius: 8px;
-            border: 1px solid #eee;
+        .add-btn:active {
+            transform: scale(0.98);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .task-section {
+            margin-bottom: 40px;
         }
 
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
+        .task-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.8em;
         }
 
-        th {
-            background-color: #f8f9fa;
-            position: sticky;
-            top: 0;
+        .task-list {
+            list-style: none;
+            min-height: 50px;
+        }
+
+        .task-item {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            cursor: move;
+            user-select: none;
+            position: relative;
+        }
+
+        .task-item.dragging {
+            opacity: 0.5;
+            transform: scale(1.02);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+            transform: scale(0.98);
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #7f8c8d;
+        }
+
+        .checkbox {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
             cursor: pointer;
-            font-weight: 500;
-            color: var(--primary-color);
         }
 
-        th:hover {
-            background-color: #e9ecef;
+        .task-text {
+            flex-grow: 1;
+            margin-right: 15px;
+            word-break: break-word;
         }
 
-        .alert {
-            padding: 12px;
-            margin-top: 12px;
-            border-radius: 6px;
-            font-weight: 500;
-            display: none;
-            transition: opacity 0.3s ease;
+        .task-text[contenteditable="true"] {
+            border: 1px solid #3498db;
+            padding: 5px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
         }
 
-        .alert-red { background-color: #ffebee; color: var(--danger-color); }
-        .alert-yellow { background-color: #fff9c4; color: var(--warning-color); }
+        .edit-btn, .delete-btn, .save-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 1.1em;
+            transition: color 0.3s ease, transform 0.1s ease;
+        }
+
+        .edit-btn {
+            color: #3498db;
+            margin-right: 10px;
+        }
+
+        .edit-btn:hover {
+            color: #2980b9;
+            transform: scale(1.1);
+        }
+
+        .save-btn {
+            color: #2ecc71;
+            margin-right: 10px;
+        }
+
+        .save-btn:hover {
+            color: #27ae60;
+            transform: scale(1.1);
+        }
+
+        .delete-btn {
+            color: #e74c3c;
+        }
+
+        .delete-btn:hover {
+            color: #c0392b;
+            transform: scale(1.1);
+        }
+
+        .drop-zone {
+            transition: background-color 0.2s ease;
+        }
+
+        .drop-zone.dragover {
+            background-color: #e8f4fd;
+        }
 
         @media (max-width: 768px) {
-            body {
+            .task-form {
                 padding: 15px;
             }
 
-            .container {
-                grid-template-columns: 1fr;
-                padding: 0 5px;
-            }
-            
-            .dashboard-title {
-                font-size: 1.8em;
-            }
-            
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            select, input[type="text"], button {
+            .task-input {
                 width: 100%;
-                margin-bottom: 5px;
+                margin-bottom: 10px;
             }
 
-            .card {
-                padding: 15px;
+            .add-btn {
+                width: 100%;
+            }
+
+            .task-item {
+                flex-wrap: wrap;
+                padding: 10px;
+            }
+
+            .task-text {
+                margin-bottom: 10px;
             }
         }
     </style>
 </head>
 <body>
-    <h1 class="dashboard-title">Urban Traffic Visualizer</h1>
-    <div class="container">
-        <div class="card">
-            <h2>Traffic Data Upload</h2>
-            <input type="file" id="fileInput" accept=".csv">
-            <div class="controls">
-                <select id="zoneSelect"></select>
-                <input type="range" id="timeRange" min="0" max="23" value="0">
-                <span id="timeValue">0:00</span>
-                <input type="range" id="trafficRange" min="0" max="1000" value="0">
-                <span id="trafficValue">0</span>
-            </div>
-        </div>
+    <h1>Task Manager</h1>
+    
+    <div class="task-form">
+        <input type="text" class="task-input" id="taskInput" placeholder="Enter a new task">
+        <button class="add-btn" onclick="addTask()">Add Task</button>
+    </div>
 
-        <div class="card">
-            <h2>Heatmap</h2>
-            <canvas id="heatmapCanvas"></canvas>
-            <div class="controls">
-                <button onclick="toggleView('heatmap')">Show Heatmap</button>
-                <button onclick="toggleView('chart')">Show Chart</button>
-            </div>
-        </div>
+    <div class="task-section">
+        <h2>Pending Tasks</h2>
+        <ul class="task-list drop-zone" id="pendingTasks"></ul>
+    </div>
 
-        <div class="card">
-            <h2>Traffic Trends</h2>
-            <canvas id="trendCanvas" style="display: none;"></canvas>
-        </div>
-
-        <div class="card">
-            <h2>Data Table</h2>
-            <div class="controls">
-                <input type="text" id="filterInput" placeholder="Filter table...">
-                <button onclick="exportToCSV()">Export CSV</button>
-            </div>
-            <div class="table-container">
-                <table id="dataTable">
-                    <thead>
-                        <tr>
-                            <th onclick="sortTable(0)">Timestamp</th>
-                            <th onclick="sortTable(1)">Location</th>
-                            <th onclick="sortTable(2)">Volume</th>
-                            <th onclick="sortTable(3)">Speed</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>Traffic Simulator</h2>
-            <div class="controls">
-                <input type="range" id="simVolume" min="0" max="1000" value="500">
-                <span id="simVolumeValue">500</span>
-                <select id="weatherSelect">
-                    <option value="clear">Clear</option>
-                    <option value="rain">Rain</option>
-                    <option value="snow">Snow</option>
-                </select>
-                <button onclick="runSimulation()">Run Simulation</button>
-            </div>
-            <div id="alertBox" class="alert"></div>
-        </div>
+    <div class="task-section">
+        <h2>Completed Tasks</h2>
+        <ul class="task-list drop-zone" id="completedTasks"></ul>
     </div>
 
     <script>
-        let trafficData = [];
-        let sortDirection = 1;
-        let sortColumn = 0;
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let draggedItem = null;
+        let draggedIndex = null;
 
-        // File handling
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                const text = e.target.result;
-                processCSV(text);
-            };
-            
-            reader.readAsText(file);
-        });
-
-        function processCSV(csv) {
-            const lines = csv.split('\n');
-            const headers = lines[0].split(',').map(h => h.trim());
-            
-            if (headers.length !== 4 || 
-                headers[0] !== 'timestamp' || 
-                headers[1] !== 'location' || 
-                headers[2] !== 'volume' || 
-                headers[3] !== 'speed') {
-                alert('Invalid CSV format. Expected: timestamp,location,volume,speed');
-                return;
-            }
-
-            trafficData = lines.slice(1).map(line => {
-                const [timestamp, location, volume, speed] = line.split(',');
-                return {
-                    timestamp: timestamp?.trim(),
-                    location: location?.trim(),
-                    volume: parseInt(volume?.trim()),
-                    speed: parseFloat(speed?.trim())
-                };
-            }).filter(row => row.timestamp && row.location && !isNaN(row.volume) && !isNaN(row.speed));
-
-            updateVisualizations();
-            populateZoneSelect();
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTasks();
         }
 
-        function populateZoneSelect() {
-            const zones = [...new Set(trafficData.map(d => d.location))];
-            const select = document.getElementById('zoneSelect');
-            select.innerHTML = '<option value="">All Zones</option>' + 
-                zones.map(zone => `<option value="${zone}">${zone}</option>`).join('');
-        }
+        function renderTasks() {
+            const pendingTasks = document.getElementById('pendingTasks');
+            const completedTasks = document.getElementById('completedTasks');
+            pendingTasks.innerHTML = '';
+            completedTasks.innerHTML = '';
 
-        // Visualizations
-        function updateVisualizations() {
-            updateHeatmap();
-            updateTrendChart();
-            updateTable();
-            checkAlerts();
-        }
-
-        function updateHeatmap() {
-            const canvas = document.getElementById('heatmapCanvas');
-            const ctx = canvas.getContext('2d');
-            const zones = [...new Set(trafficData.map(d => d.location))];
-            const width = canvas.width = canvas.offsetWidth;
-            const height = canvas.height = 300;
-            const cellWidth = width / zones.length;
-
-            ctx.clearRect(0, 0, width, height);
-
-            zones.forEach((zone, i) => {
-                const zoneData = trafficData.filter(d => d.location === zone);
-                const avgVolume = zoneData.reduce((sum, d) => sum + d.volume, 0) / zoneData.length;
-                const color = getTrafficColor(avgVolume);
+            tasks.forEach((task, index) => {
+                const taskItem = document.createElement('li');
+                taskItem.className = `task-item ${task.completed ? 'completed' : ''}`;
+                taskItem.setAttribute('draggable', 'true');
+                taskItem.setAttribute('data-index', index);
                 
-                ctx.fillStyle = color;
-                ctx.fillRect(i * cellWidth, 0, cellWidth, height);
-                ctx.fillStyle = '#ffffff';
-                ctx.font = '12px Segoe UI';
-                ctx.textAlign = 'center';
-                ctx.fillText(zone, i * cellWidth + cellWidth/2, height - 10);
+                taskItem.innerHTML = `
+                    <input type="checkbox" class="checkbox" 
+                        ${task.completed ? 'checked' : ''} 
+                        onchange="toggleTask(${index})">
+                    <span class="task-text" contenteditable="false">${task.text}</span>
+                    <button class="edit-btn" onclick="startEditing(${index})" 
+                        style="${task.completed ? 'display: none' : ''}">✏️</button>
+                    <button class="save-btn" onclick="saveEdit(${index})" style="display: none">💾</button>
+                    <button class="delete-btn" onclick="deleteTask(${index})">🗑️</button>
+                `;
+
+                if (task.completed) {
+                    completedTasks.appendChild(taskItem);
+                } else {
+                    pendingTasks.appendChild(taskItem);
+                }
+
+                // Add drag events
+                taskItem.addEventListener('dragstart', handleDragStart);
+                taskItem.addEventListener('dragend', handleDragEnd);
+            });
+
+            // Add drop zone events
+            [pendingTasks, completedTasks].forEach(zone => {
+                zone.addEventListener('dragover', handleDragOver);
+                zone.addEventListener('dragenter', handleDragEnter);
+                zone.addEventListener('dragleave', handleDragLeave);
+                zone.addEventListener('drop', handleDrop);
             });
         }
 
-        function updateTrendChart() {
-            const canvas = document.getElementById('trendCanvas');
-            const ctx = canvas.getContext('2d');
-            const width = canvas.width = canvas.offsetWidth;
-            const height = canvas.height = 300;
-            const padding = 40;
-
-            ctx.clearRect(0, 0, width, height);
-
-            // Calculate hourly data
-            const hourlyData = Array(24).fill(0).map((_, i) => {
-                const hourData = trafficData.filter(d => new Date(d.timestamp).getHours() === i);
-                return hourData.length ? hourData.reduce((sum, d) => sum + d.volume, 0) / hourData.length : 0;
-            });
-
-            const maxVolume = Math.max(...hourlyData, 1000);
-            const stepX = (width - padding * 2) / 23;
-            const stepY = (height - padding * 2) / maxVolume;
-
-            // Draw grid lines
-            ctx.strokeStyle = '#ecf0f1';
-            ctx.lineWidth = 1;
-            for (let i = 0; i <= 4; i++) {
-                ctx.beginPath();
-                ctx.moveTo(padding, height - padding - (i * stepY * maxVolume/4));
-                ctx.lineTo(width - padding, height - padding - (i * stepY * maxVolume/4));
-                ctx.stroke();
-            }
-
-            // Draw axes
-            ctx.beginPath();
-            ctx.moveTo(padding, padding);
-            ctx.lineTo(padding, height - padding);
-            ctx.lineTo(width - padding, height - padding);
-            ctx.strokeStyle = '#bdc3c7';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-
-            // Draw X-axis labels
-            ctx.fillStyle = '#2c3e50';
-            ctx.font = '12px Segoe UI';
-            ctx.textAlign = 'center';
-            for (let i = 0; i < 24; i += 4) {
-                ctx.fillText(`${i}:00`, padding + i * stepX, height - padding + 20);
-            }
-
-            // Draw Y-axis labels
-            ctx.textAlign = 'right';
-            for (let i = 0; i <= maxVolume; i += maxVolume/4) {
-                ctx.fillText(Math.round(i), padding - 10, height - padding - i * stepY + 5);
-            }
-
-            // Draw area under curve
-            ctx.beginPath();
-            ctx.moveTo(padding, height - padding);
-            hourlyData.forEach((volume, i) => {
-                ctx.lineTo(padding + i * stepX, height - padding - volume * stepY);
-            });
-            ctx.lineTo(width - padding, height - padding);
-            ctx.fillStyle = 'rgba(52, 152, 219, 0.2)';
-            ctx.fill();
-
-            // Draw line
-            ctx.beginPath();
-            ctx.moveTo(padding, height - padding - hourlyData[0] * stepY);
-            hourlyData.forEach((volume, i) => {
-                ctx.lineTo(padding + i * stepX, height - padding - volume * stepY);
-            });
-            ctx.strokeStyle = '#3498db';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            // Draw points
-            ctx.fillStyle = '#3498db';
-            hourlyData.forEach((volume, i) => {
-                ctx.beginPath();
-                ctx.arc(padding + i * stepX, height - padding - volume * stepY, 4, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
-        function updateTable() {
-            const tbody = document.getElementById('dataTable').querySelector('tbody');
-            const filter = document.getElementById('filterInput').value.toLowerCase();
-            const timeFilter = document.getElementById('timeRange').value;
-            const trafficFilter = document.getElementById('trafficRange').value;
-            const zoneFilter = document.getElementById('zoneSelect').value;
-
-            let filteredData = trafficData.filter(row => {
-                const hour = new Date(row.timestamp).getHours();
-                return (!zoneFilter || row.location === zoneFilter) &&
-                       hour >= timeFilter &&
-                       row.volume >= trafficFilter &&
-                       (row.timestamp.toLowerCase().includes(filter) ||
-                        row.location.toLowerCase().includes(filter));
-            });
-
-            filteredData.sort((a, b) => {
-                const values = [a.timestamp, a.location, a.volume, a.speed];
-                return (values[sortColumn] > b[Object.keys(b)[sortColumn]] ? 1 : -1) * sortDirection;
-            });
-
-            tbody.innerHTML = filteredData.map(row => `
-                <tr style="background-color: ${getTrafficColor(row.volume)}">
-                    <td>${row.timestamp}</td>
-                    <td>${row.location}</td>
-                    <td>${row.volume}</td>
-                    <td>${row.speed}</td>
-                </tr>
-            `).join('');
-        }
-
-        function getTrafficColor(volume) {
-            if (volume > 800) return 'rgba(231, 76, 60, 0.2)';
-            if (volume > 400) return 'rgba(241, 196, 15, 0.2)';
-            return 'rgba(39, 174, 96, 0.2)';
-        }
-
-        // Controls
-        document.getElementById('timeRange').addEventListener('input', function(e) {
-            document.getElementById('timeValue').textContent = `${e.target.value}:00`;
-            updateVisualizations();
-        });
-
-        document.getElementById('trafficRange').addEventListener('input', function(e) {
-            document.getElementById('trafficValue').textContent = e.target.value;
-            updateVisualizations();
-        });
-
-        document.getElementById('zoneSelect').addEventListener('change', updateVisualizations);
-        document.getElementById('filterInput').addEventListener('input', updateTable);
-
-        function toggleView(view) {
-            const heatmap = document.getElementById('heatmapCanvas');
-            const trend = document.getElementById('trendCanvas');
-            heatmap.style.display = view === 'heatmap' ? 'block' : 'none';
-            trend.style.display = view === 'chart' ? 'block' : 'none';
-        }
-
-        // Table sorting
-        function sortTable(column) {
-            if (sortColumn === column) sortDirection *= -1;
-            sortColumn = column;
-            updateTable();
-        }
-
-        // Simulator
-        function runSimulation() {
-            const volume = parseInt(document.getElementById('simVolume').value);
-            const weather = document.getElementById('weatherSelect').value;
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
             
-            const simulatedData = trafficData.map(row => {
-                let newVolume = volume;
-                if (weather === 'rain') newVolume *= 1.2;
-                if (weather === 'snow') newVolume *= 1.5;
+            if (text) {
+                tasks.push({
+                    text: text,
+                    completed: false
+                });
+                input.value = '';
+                saveTasks();
+            }
+        }
+
+        function toggleTask(index) {
+            tasks[index].completed = !tasks[index].completed;
+            saveTasks();
+        }
+
+        function startEditing(index) {
+            if (!tasks[index].completed) {
+                const taskItem = document.querySelector(`[data-index="${index}"]`);
+                const taskText = taskItem.querySelector('.task-text');
+                const editBtn = taskItem.querySelector('.edit-btn');
+                const saveBtn = taskItem.querySelector('.save-btn');
+
+                taskText.setAttribute('contenteditable', 'true');
+                taskText.focus();
+                editBtn.style.display = 'none';
+                saveBtn.style.display = 'inline-block';
+
+                // Prevent dragging while editing
+                taskItem.setAttribute('draggable', 'false');
+            }
+        }
+
+        function saveEdit(index) {
+            const taskItem = document.querySelector(`[data-index="${index}"]`);
+            const taskText = taskItem.querySelector('.task-text');
+            const editBtn = taskItem.querySelector('.edit-btn');
+            const saveBtn = taskItem.querySelector('.save-btn');
+            const newText = taskText.textContent.trim();
+
+            if (newText) {
+                tasks[index].text = newText;
+                taskText.setAttribute('contenteditable', 'false');
+                editBtn.style.display = 'inline-block';
+                saveBtn.style.display = 'none';
+                taskItem.setAttribute('draggable', 'true');
+                saveTasks();
+            }
+        }
+
+        function deleteTask(index) {
+            tasks.splice(index, 1);
+            saveTasks();
+        }
+
+        // Drag and Drop Handlers
+        function handleDragStart(e) {
+            draggedItem = this;
+            draggedIndex = parseInt(this.getAttribute('data-index'));
+            setTimeout(() => this.classList.add('dragging'), 0);
+        }
+
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+            draggedItem = null;
+            draggedIndex = null;
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        }
+
+        function handleDragLeave() {
+            this.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            
+            const dropZone = this;
+            const isCompletedZone = dropZone.id === 'completedTasks';
+            const droppedTask = tasks[draggedIndex];
+            
+            // Remove task from original position
+            tasks.splice(draggedIndex, 1);
+            
+            // Update completion status based on drop zone
+            droppedTask.completed = isCompletedZone;
+            
+            // Find new position
+            const items = dropZone.querySelectorAll('.task-item:not(.dragging)');
+            let newIndex = 0;
+            
+            if (items.length > 0) {
+                const rect = dropZone.getBoundingClientRect();
+                const dropY = e.clientY - rect.top;
+                let inserted = false;
                 
-                return {
-                    ...row,
-                    volume: Math.min(newVolume, 1000),
-                    speed: row.speed * (weather === 'clear' ? 1 : weather === 'rain' ? 0.8 : 0.6)
-                };
-            });
-
-            trafficData = simulatedData;
-            updateVisualizations();
-        }
-
-        document.getElementById('simVolume').addEventListener('input', function(e) {
-            document.getElementById('simVolumeValue').textContent = e.target.value;
-        });
-
-        // Alerts
-        function checkAlerts() {
-            const alertBox = document.getElementById('alertBox');
-            const avgVolume = trafficData.reduce((sum, d) => sum + d.volume, 0) / trafficData.length;
-            
-            if (avgVolume > 800) {
-                alertBox.className = 'alert alert-red';
-                alertBox.textContent = 'Heavy congestion detected!';
-                alertBox.style.display = 'block';
-            } else if (avgVolume > 400) {
-                alertBox.className = 'alert alert-yellow';
-                alertBox.textContent = 'Moderate congestion detected';
-                alertBox.style.display = 'block';
+                for (let i = 0; i < items.length; i++) {
+                    const itemRect = items[i].getBoundingClientRect();
+                    const itemTop = itemRect.top - rect.top;
+                    const itemBottom = itemTop + itemRect.height;
+                    
+                    if (dropY < itemBottom) {
+                        newIndex = tasks.indexOf(tasks.find(t => 
+                            t.text === items[i].querySelector('.task-text').textContent));
+                        tasks.splice(newIndex, 0, droppedTask);
+                        inserted = true;
+                        break;
+                    }
+                }
+                
+                if (!inserted) {
+                    newIndex = tasks.indexOf(tasks.find(t => 
+                        t.text === items[items.length - 1].querySelector('.task-text').textContent)) + 1;
+                    tasks.splice(newIndex, 0, droppedTask);
+                }
             } else {
-                alertBox.style.display = 'none';
+                tasks.push(droppedTask);
             }
-        }
-
-        // Export to CSV
-        function exportToCSV() {
-            const tbody = document.getElementById('dataTable').querySelector('tbody');
-            const rows = Array.from(tbody.getElementsByTagName('tr'));
             
-            let csvContent = "timestamp,location,volume,speed\n";
-            rows.forEach(row => {
-                const cells = Array.from(row.getElementsByTagName('td'));
-                const rowData = cells.map(cell => `"${cell.textContent}"`).join(',');
-                csvContent += rowData + "\n";
-            });
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'traffic_data_export.csv');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            saveTasks();
         }
+
+        // Add task with Enter key
+        document.getElementById('taskInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        // Initial render
+        renderTasks();
     </script>
 </body>
 </html>
