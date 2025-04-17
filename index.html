@@ -1,444 +1,552 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F1 Driver Comparison Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Urban Traffic Visualizer</title>
     <style>
         :root {
-            /* F1 Pastel V1 Color Palette */
-            --f1-red: #FF9999;
-            --f1-blue: #99CCFF;
-            --f1-green: #99FF99;
-            --f1-yellow: #FFFF99;
-            --f1-purple: #CC99FF;
-            --f1-bg: #F5F6F5;
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f1c40f;
+            --danger-color: #e74c3c;
+            --background-color: #ecf0f1;
+            --card-background: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        .spinner {
-            border: 4px solid var(--f1-bg);
-            border-top: 4px solid var(--f1-blue);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .dashboard-title {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--primary-color);
+            font-size: 2.2em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            padding: 0 15px;
+        }
+
+        .card {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            font-weight: 500;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 300px !important;
+            border-radius: 8px;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        select, input[type="range"], input[type="text"], button {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9em;
+            transition: border-color 0.2s ease;
+        }
+
+        select, input[type="text"] {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 8px 16px;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .table-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        th:hover {
+            background-color: #e9ecef;
+        }
+
+        .alert {
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            display: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .alert-red { background-color: #ffebee; color: var(--danger-color); }
+        .alert-yellow { background-color: #fff9c4; color: var(--warning-color); }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                grid-template-columns: 1fr;
+                padding: 0 5px;
+            }
+            
+            .dashboard-title {
+                font-size: 1.8em;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            select, input[type="text"], button {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+
+            .card {
+                padding: 15px;
+            }
         }
     </style>
 </head>
-<body class="bg-[var(--f1-bg)] font-sans">
-    <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-bold mb-6 text-center text-[var(--f1-red)]">F1 Driver Comparison Dashboard</h1>
-        
-        <!-- Driver Selection -->
-        <div class="mb-6 bg-white p-4 rounded-lg shadow flex flex-col md:flex-row gap-4">
-            <div class="flex-1">
-                <label for="driver1Select" class="block text-lg font-medium mb-2 text-[var(--f1-blue)]">Driver 1:</label>
-                <select id="driver1Select" class="w-full p-2 border rounded-md bg-[var(--f1-bg)] text-[var(--f1-purple)]">
-                    <option value="">Loading drivers...</option>
-                </select>
-            </div>
-            <div class="flex-1">
-                <label for="driver2Select" class="block text-lg font-medium mb-2 text-[var(--f1-blue)]">Driver 2:</label>
-                <select id="driver2Select" class="w-full p-2 border rounded-md bg-[var(--f1-bg)] text-[var(--f1-purple)]">
-                    <option value="">Select second driver (optional)</option>
-                </select>
+<body>
+    <h1 class="dashboard-title">Urban Traffic Visualizer</h1>
+    <div class="container">
+        <div class="card">
+            <h2>Traffic Data Upload</h2>
+            <input type="file" id="fileInput" accept=".csv">
+            <div class="controls">
+                <select id="zoneSelect"></select>
+                <input type="range" id="timeRange" min="0" max="23" value="0">
+                <span id="timeValue">0:00</span>
+                <input type="range" id="trafficRange" min="0" max="1000" value="0">
+                <span id="trafficValue">0</span>
             </div>
         </div>
 
-        <!-- Loading Spinner -->
-        <div id="loading" class="hidden">
-            <div class="spinner"></div>
+        <div class="card">
+            <h2>Heatmap</h2>
+            <canvas id="heatmapCanvas"></canvas>
+            <div class="controls">
+                <button onclick="toggleView('heatmap')">Show Heatmap</button>
+                <button onclick="toggleView('chart')">Show Chart</button>
+            </div>
         </div>
 
-        <!-- Dashboard Sections -->
-        <div id="dashboard" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Driver 1 Sections -->
-            <div id="driver1Sections">
-                <div class="bg-white p-4 rounded-lg shadow mb-6">
-                    <h2 class="text-xl font-semibold mb-4 text-[var(--f1-red)]">Pit Stops - Driver 1</h2>
-                    <canvas id="pitsChart1" class="mb-4"></canvas>
-                    <input type="text" id="pitsFilter1" class="w-full p-2 mb-2 border rounded bg-[var(--f1-bg)]" placeholder="Filter pit stops...">
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="bg-[var(--f1-yellow)]">
-                                    <th class="p-2">Lap</th>
-                                    <th class="p-2">Duration</th>
-                                    <th class="p-2">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pitsTable1"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <!-- Other sections for Driver 1 -->
-                <div class="bg-white p-4 rounded-lg shadow mb-6">
-                    <h2 class="text-xl font-semibold mb-4 text-[var(--f1-blue)]">Car Data - Driver 1</h2>
-                    <canvas id="carDataChart1" class="mb-4"></canvas>
-                    <input type="text" id="carDataFilter1" class="w-full p-2 mb-2 border rounded bg-[var(--f1-bg)]" placeholder="Filter car data...">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="bg-[var(--f1-green)]">
-                                <th class="p-2">Brake</th>
-                                <th class="p-2">DRS</th>
-                                <th class="p-2">Speed</th>
-                                <th class="p-2">Throttle</th>
-                            </tr>
-                        </thead>
-                        <tbody id="carDataTable1"></tbody>
-                    </table>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow mb-6">
-                    <h2 class="text-xl font-semibold mb-4 text-[var(--f1-green)]">Stints - Driver 1</h2>
-                    <canvas id="stintsChart1" class="mb-4"></canvas>
-                    <input type="text" id="stintsFilter1" class="w-full p-2 mb-2 border rounded bg-[var(--f1-bg)]" placeholder="Filter stints...">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="bg-[var(--f1-purple)]">
-                                <th class="p-2">Stint</th>
-                                <th class="p-2">Compound</th>
-                                <th class="p-2">Lap Start</th>
-                                <th class="p-2">Lap End</th>
-                            </tr>
-                        </thead>
-                        <tbody id="stintsTable1"></tbody>
-                    </table>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow mb-6">
-                    <h2 class="text-xl font-semibold mb-4 text-[var(--f1-yellow)]">Lap Times - Driver 1</h2>
-                    <canvas id="lapsChart1" class="mb-4"></canvas>
-                    <input type="text" id="lapsFilter1" class="w-full p-2 mb-2 border rounded bg-[var(--f1-bg)]" placeholder="Filter laps...">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="bg-[var(--f1-blue)]">
-                                <th class="p-2">Lap</th>
-                                <th class="p-2">Duration</th>
-                                <th class="p-2">ST Speed</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lapsTable1"></tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="card">
+            <h2>Traffic Trends</h2>
+            <canvas id="trendCanvas" style="display: none;"></canvas>
+        </div>
 
-            <!-- Driver 2 Sections -->
-            <div id="driver2Sections" class="hidden">
-                <div class="bg-white p-4 rounded-lg shadow mb-6">
-                    <h2 class="text-xl font-semibold mb-4 text-[var(--f1-red)]">Pit Stops - Driver 2</h2>
-                    <canvas id="pitsChart2" class="mb-4"></canvas>
-                    <input type="text" id="pitsFilter2" class="w-full p-2 mb-2 border rounded bg-[var(--f1-bg)]" placeholder="Filter pit stops...">
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="bg-[var(--f1-yellow)]">
-                                    <th class="p-2">Lap</th>
-                                    <th class="p-2">Duration</th>
-                                    <th class="p-2">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pitsTable2"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <!-- Other sections for Driver 2 -->
-                <div class="bg-white p-4 rounded-lg shadow mb-6">
-                    <h2 class="text-xl font-semibold mb-4 text-[var(--f1-blue)]">Car Data - Driver 2</h2>
-                    <canvas id="carDataChart2" class="mb-4"></canvas>
-                    <input type="text" id="carDataFilter2" class="w-full p-2 mb-2 border rounded bg-[var(--f1-bg)]" placeholder="Filter car data...">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="bg-[var(--f1-green)]">
-                                <th class="p-2">Brake</th>
-                                <th class="p-2">DRS</th>
-                                <th class="p-2">Speed</th>
-                                <th class="p-2">Throttle</th>
-                            </tr>
-                        </thead>
-                        <tbody id="carDataTable2"></tbody>
-                    </table>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow mb-6">
-                    <h2 class="text-xl font-semibold mb-4 text-[var(--f1-green)]">Stints - Driver 2</h2>
-                    <canvas id="stintsChart2" class="mb-4"></canvas>
-                    <input type="text" id="stintsFilter2" class="w-full p-2 mb-2 border rounded bg-[var(--f1-bg)]" placeholder="Filter stints...">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="bg-[var(--f1-purple)]">
-                                <th class="p-2">Stint</th>
-                                <th class="p-2">Compound</th>
-                                <th class="p-2">Lap Start</th>
-                                <th class="p-2">Lap End</th>
-                            </tr>
-                        </thead>
-                        <tbody id="stintsTable2"></tbody>
-                    </table>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow mb-6">
-                    <h2 class="text-xl font-semibold mb-4 text-[var(--f1-yellow)]">Lap Times - Driver 2</h2>
-                    <canvas id="lapsChart2" class="mb-4"></canvas>
-                    <input type="text" id="lapsFilter2" class="w-full p-2 mb-2 border rounded bg-[var(--f1-bg)]" placeholder="Filter laps...">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="bg-[var(--f1-blue)]">
-                                <th class="p-2">Lap</th>
-                                <th class="p-2">Duration</th>
-                                <th class="p-2">ST Speed</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lapsTable2"></tbody>
-                    </table>
-                </div>
+        <div class="card">
+            <h2>Data Table</h2>
+            <div class="controls">
+                <input type="text" id="filterInput" placeholder="Filter table...">
+                <button onclick="exportToCSV()">Export CSV</button>
             </div>
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)">Timestamp</th>
+                            <th onclick="sortTable(1)">Location</th>
+                            <th onclick="sortTable(2)">Volume</th>
+                            <th onclick="sortTable(3)">Speed</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Traffic Simulator</h2>
+            <div class="controls">
+                <input type="range" id="simVolume" min="0" max="1000" value="500">
+                <span id="simVolumeValue">500</span>
+                <select id="weatherSelect">
+                    <option value="clear">Clear</option>
+                    <option value="rain">Rain</option>
+                    <option value="snow">Snow</option>
+                </select>
+                <button onclick="runSimulation()">Run Simulation</button>
+            </div>
+            <div id="alertBox" class="alert"></div>
         </div>
     </div>
 
     <script>
-        let charts = {
-            driver1: { pits: null, carData: null, stints: null, laps: null },
-            driver2: { pits: null, carData: null, stints: null, laps: null }
-        };
-        let allData = {
-            drivers: [],
-            pits: [],
-            carData: [],
-            stints: [],
-            laps: []
-        };
-        let updateInterval;
+        let trafficData = [];
+        let sortDirection = 1;
+        let sortColumn = 0;
 
-        // Initialize charts
-        function initializeCharts() {
-            ['1', '2'].forEach(driverNum => {
-                charts[`driver${driverNum}`] = {
-                    pits: new Chart(document.getElementById(`pitsChart${driverNum}`), {
-                        type: 'bar',
-                        data: { labels: [], datasets: [] },
-                        options: { scales: { y: { beginAtZero: true } } }
-                    }),
-                    carData: new Chart(document.getElementById(`carDataChart${driverNum}`), {
-                        type: 'line',
-                        data: { labels: [], datasets: [] },
-                        options: { scales: { y: { beginAtZero: true } } }
-                    }),
-                    stints: new Chart(document.getElementById(`stintsChart${driverNum}`), {
-                        type: 'bar',
-                        data: { labels: [], datasets: [] },
-                        options: { scales: { y: { beginAtZero: true } } }
-                    }),
-                    laps: new Chart(document.getElementById(`lapsChart${driverNum}`), {
-                        type: 'line',
-                        data: { labels: [], datasets: [] },
-                        options: { scales: { y: { beginAtZero: true } } }
-                    })
+        // File handling
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const text = e.target.result;
+                processCSV(text);
+            };
+            
+            reader.readAsText(file);
+        });
+
+        function processCSV(csv) {
+            const lines = csv.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            if (headers.length !== 4 || 
+                headers[0] !== 'timestamp' || 
+                headers[1] !== 'location' || 
+                headers[2] !== 'volume' || 
+                headers[3] !== 'speed') {
+                alert('Invalid CSV format. Expected: timestamp,location,volume,speed');
+                return;
+            }
+
+            trafficData = lines.slice(1).map(line => {
+                const [timestamp, location, volume, speed] = line.split(',');
+                return {
+                    timestamp: timestamp?.trim(),
+                    location: location?.trim(),
+                    volume: parseInt(volume?.trim()),
+                    speed: parseFloat(speed?.trim())
+                };
+            }).filter(row => row.timestamp && row.location && !isNaN(row.volume) && !isNaN(row.speed));
+
+            updateVisualizations();
+            populateZoneSelect();
+        }
+
+        function populateZoneSelect() {
+            const zones = [...new Set(trafficData.map(d => d.location))];
+            const select = document.getElementById('zoneSelect');
+            select.innerHTML = '<option value="">All Zones</option>' + 
+                zones.map(zone => `<option value="${zone}">${zone}</option>`).join('');
+        }
+
+        // Visualizations
+        function updateVisualizations() {
+            updateHeatmap();
+            updateTrendChart();
+            updateTable();
+            checkAlerts();
+        }
+
+        function updateHeatmap() {
+            const canvas = document.getElementById('heatmapCanvas');
+            const ctx = canvas.getContext('2d');
+            const zones = [...new Set(trafficData.map(d => d.location))];
+            const width = canvas.width = canvas.offsetWidth;
+            const height = canvas.height = 300;
+            const cellWidth = width / zones.length;
+
+            ctx.clearRect(0, 0, width, height);
+
+            zones.forEach((zone, i) => {
+                const zoneData = trafficData.filter(d => d.location === zone);
+                const avgVolume = zoneData.reduce((sum, d) => sum + d.volume, 0) / zoneData.length;
+                const color = getTrafficColor(avgVolume);
+                
+                ctx.fillStyle = color;
+                ctx.fillRect(i * cellWidth, 0, cellWidth, height);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '12px Segoe UI';
+                ctx.textAlign = 'center';
+                ctx.fillText(zone, i * cellWidth + cellWidth/2, height - 10);
+            });
+        }
+
+        function updateTrendChart() {
+            const canvas = document.getElementById('trendCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width = canvas.offsetWidth;
+            const height = canvas.height = 300;
+            const padding = 40;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // Calculate hourly data
+            const hourlyData = Array(24).fill(0).map((_, i) => {
+                const hourData = trafficData.filter(d => new Date(d.timestamp).getHours() === i);
+                return hourData.length ? hourData.reduce((sum, d) => sum + d.volume, 0) / hourData.length : 0;
+            });
+
+            const maxVolume = Math.max(...hourlyData, 1000);
+            const stepX = (width - padding * 2) / 23;
+            const stepY = (height - padding * 2) / maxVolume;
+
+            // Draw grid lines
+            ctx.strokeStyle = '#ecf0f1';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                ctx.beginPath();
+                ctx.moveTo(padding, height - padding - (i * stepY * maxVolume/4));
+                ctx.lineTo(width - padding, height - padding - (i * stepY * maxVolume/4));
+                ctx.stroke();
+            }
+
+            // Draw axes
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.strokeStyle = '#bdc3c7';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Draw X-axis labels
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = '12px Segoe UI';
+            ctx.textAlign = 'center';
+            for (let i = 0; i < 24; i += 4) {
+                ctx.fillText(`${i}:00`, padding + i * stepX, height - padding + 20);
+            }
+
+            // Draw Y-axis labels
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= maxVolume; i += maxVolume/4) {
+                ctx.fillText(Math.round(i), padding - 10, height - padding - i * stepY + 5);
+            }
+
+            // Draw area under curve
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            hourlyData.forEach((volume, i) => {
+                ctx.lineTo(padding + i * stepX, height - padding - volume * stepY);
+            });
+            ctx.lineTo(width - padding, height - padding);
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.2)';
+            ctx.fill();
+
+            // Draw line
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding - hourlyData[0] * stepY);
+            hourlyData.forEach((volume, i) => {
+                ctx.lineTo(padding + i * stepX, height - padding - volume * stepY);
+            });
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw points
+            ctx.fillStyle = '#3498db';
+            hourlyData.forEach((volume, i) => {
+                ctx.beginPath();
+                ctx.arc(padding + i * stepX, height - padding - volume * stepY, 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function updateTable() {
+            const tbody = document.getElementById('dataTable').querySelector('tbody');
+            const filter = document.getElementById('filterInput').value.toLowerCase();
+            const timeFilter = document.getElementById('timeRange').value;
+            const trafficFilter = document.getElementById('trafficRange').value;
+            const zoneFilter = document.getElementById('zoneSelect').value;
+
+            let filteredData = trafficData.filter(row => {
+                const hour = new Date(row.timestamp).getHours();
+                return (!zoneFilter || row.location === zoneFilter) &&
+                       hour >= timeFilter &&
+                       row.volume >= trafficFilter &&
+                       (row.timestamp.toLowerCase().includes(filter) ||
+                        row.location.toLowerCase().includes(filter));
+            });
+
+            filteredData.sort((a, b) => {
+                const values = [a.timestamp, a.location, a.volume, a.speed];
+                return (values[sortColumn] > b[Object.keys(b)[sortColumn]] ? 1 : -1) * sortDirection;
+            });
+
+            tbody.innerHTML = filteredData.map(row => `
+                <tr style="background-color: ${getTrafficColor(row.volume)}">
+                    <td>${row.timestamp}</td>
+                    <td>${row.location}</td>
+                    <td>${row.volume}</td>
+                    <td>${row.speed}</td>
+                </tr>
+            `).join('');
+        }
+
+        function getTrafficColor(volume) {
+            if (volume > 800) return 'rgba(231, 76, 60, 0.2)';
+            if (volume > 400) return 'rgba(241, 196, 15, 0.2)';
+            return 'rgba(39, 174, 96, 0.2)';
+        }
+
+        // Controls
+        document.getElementById('timeRange').addEventListener('input', function(e) {
+            document.getElementById('timeValue').textContent = `${e.target.value}:00`;
+            updateVisualizations();
+        });
+
+        document.getElementById('trafficRange').addEventListener('input', function(e) {
+            document.getElementById('trafficValue').textContent = e.target.value;
+            updateVisualizations();
+        });
+
+        document.getElementById('zoneSelect').addEventListener('change', updateVisualizations);
+        document.getElementById('filterInput').addEventListener('input', updateTable);
+
+        function toggleView(view) {
+            const heatmap = document.getElementById('heatmapCanvas');
+            const trend = document.getElementById('trendCanvas');
+            heatmap.style.display = view === 'heatmap' ? 'block' : 'none';
+            trend.style.display = view === 'chart' ? 'block' : 'none';
+        }
+
+        // Table sorting
+        function sortTable(column) {
+            if (sortColumn === column) sortDirection *= -1;
+            sortColumn = column;
+            updateTable();
+        }
+
+        // Simulator
+        function runSimulation() {
+            const volume = parseInt(document.getElementById('simVolume').value);
+            const weather = document.getElementById('weatherSelect').value;
+            
+            const simulatedData = trafficData.map(row => {
+                let newVolume = volume;
+                if (weather === 'rain') newVolume *= 1.2;
+                if (weather === 'snow') newVolume *= 1.5;
+                
+                return {
+                    ...row,
+                    volume: Math.min(newVolume, 1000),
+                    speed: row.speed * (weather === 'clear' ? 1 : weather === 'rain' ? 0.8 : 0.6)
                 };
             });
+
+            trafficData = simulatedData;
+            updateVisualizations();
         }
 
-        // Fetch all data
-        async function fetchData() {
-            try {
-                document.getElementById('loading').classList.remove('hidden');
-                const params = 'session_key=latest&meeting_key=latest';
-                const [driversRes, pitsRes, carDataRes, stintsRes, lapsRes] = await Promise.all([
-                    fetch(`https://api.openf1.org/v1/drivers?${params}`),
-                    fetch(`https://api.openf1.org/v1/pit?${params}`),
-                    fetch(`https://api.openf1.org/v1/car_data?${params}`),
-                    fetch(`https://api.openf1.org/v1/stints?${params}`),
-                    fetch(`https://api.openf1.org/v1/laps?${params}`)
-                ]);
+        document.getElementById('simVolume').addEventListener('input', function(e) {
+            document.getElementById('simVolumeValue').textContent = e.target.value;
+        });
 
-                allData.drivers = await driversRes.json();
-                allData.pits = await pitsRes.json();
-                allData.carData = await carDataRes.json();
-                allData.stints = await stintsRes.json();
-                allData.laps = await lapsRes.json();
-
-                populateDriverSelects();
-                updateDashboardFromSelects();
-                document.getElementById('loading').classList.add('hidden');
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                document.getElementById('loading').classList.add('hidden');
-            }
-        }
-
-        // Populate driver selects
-        function populateDriverSelects() {
-            ['1', '2'].forEach(num => {
-                const select = document.getElementById(`driver${num}Select`);
-                select.innerHTML = num === '1' ? '<option value="">Select first driver</option>' : '<option value="">Select second driver (optional)</option>';
-                allData.drivers.forEach(driver => {
-                    const option = document.createElement('option');
-                    option.value = driver.driver_number;
-                    option.textContent = `${driver.broadcast_name} (#${driver.driver_number})`;
-                    select.appendChild(option);
-                });
-                const savedValue = localStorage.getItem(`driver${num}`);
-                if (savedValue) select.value = savedValue;
-            });
-        }
-
-        // Update dashboard
-        function updateDashboard(driver1Num, driver2Num = null) {
-            document.getElementById('dashboard').classList.remove('hidden');
+        // Alerts
+        function checkAlerts() {
+            const alertBox = document.getElementById('alertBox');
+            const avgVolume = trafficData.reduce((sum, d) => sum + d.volume, 0) / trafficData.length;
             
-            const driver1Data = getDriverData(driver1Num);
-            updateDriverSections('1', driver1Data);
-
-            if (driver2Num) {
-                document.getElementById('driver2Sections').classList.remove('hidden');
-                const driver2Data = getDriverData(driver2Num);
-                updateDriverSections('2', driver2Data);
+            if (avgVolume > 800) {
+                alertBox.className = 'alert alert-red';
+                alertBox.textContent = 'Heavy congestion detected!';
+                alertBox.style.display = 'block';
+            } else if (avgVolume > 400) {
+                alertBox.className = 'alert alert-yellow';
+                alertBox.textContent = 'Moderate congestion detected';
+                alertBox.style.display = 'block';
             } else {
-                document.getElementById('driver2Sections').classList.add('hidden');
+                alertBox.style.display = 'none';
             }
         }
 
-        function getDriverData(driverNumber) {
-            return {
-                pits: allData.pits.filter(p => p.driver_number === parseInt(driverNumber)),
-                carData: allData.carData.filter(c => c.driver_number === parseInt(driverNumber)),
-                stints: allData.stints.filter(s => s.driver_number === parseInt(driverNumber)),
-                laps: allData.laps.filter(l => l.driver_number === parseInt(driverNumber))
-            };
-        }
-
-        // Update driver sections
-        function updateDriverSections(driverNum, data) {
-            updateSection(`pits${driverNum}`, data.pits, charts[`driver${driverNum}`].pits, driverNum === '1' ? 'var(--f1-red)' : 'var(--f1-blue)');
-            updateSection(`carData${driverNum}`, data.carData, charts[`driver${driverNum}`].carData, driverNum === '1' ? 'var(--f1-blue)' : 'var(--f1-red)');
-            updateSection(`stints${driverNum}`, data.stints, charts[`driver${driverNum}`].stints, driverNum === '1' ? 'var(--f1-purple)' : 'var(--f1-green)');
-            updateSection(`laps${driverNum}`, data.laps, charts[`driver${driverNum}`].laps, driverNum === '1' ? 'var(--f1-yellow)' : 'var(--f1-purple)');
-        }
-
-        // Update individual section
-        function updateSection(section, data, chart, color) {
-            const colors = ['#FFB6C1', '#87CEEB', '#98FB98', '#FFD700', '#DDA0DD', '#F0E68C', '#E6E6FA', '#FFA07A', '#20B2AA', '#9370DB'];
+        // Export to CSV
+        function exportToCSV() {
+            const tbody = document.getElementById('dataTable').querySelector('tbody');
+            const rows = Array.from(tbody.getElementsByTagName('tr'));
             
-            // Update chart
-            if (section.startsWith('pits')) {
-                chart.data.labels = data.map(item => item.lap_number);
-                chart.data.datasets = [{
-                    label: 'Pit Duration',
-                    data: data.map(item => item.pit_duration),
-                    backgroundColor: colors.slice(0, data.length)
-                }];
-            } else if (section.startsWith('carData')) {
-                chart.data.labels = data.map((_, i) => i + 1);
-                chart.data.datasets = [
-                    { label: 'Speed', data: data.map(item => item.speed), borderColor: color },
-                    { label: 'Throttle', data: data.map(item => item.throttle), borderColor: 'var(--f1-green)' },
-                    { label: 'Brake', data: data.map(item => item.brake), borderColor: 'var(--f1-red)' },
-                    { label: 'DRS', data: data.map(item => item.drs), borderColor: 'var(--f1-yellow)' }
-                ];
-            } else if (section.startsWith('stints')) {
-                chart.data.labels = data.map(item => item.stint_number);
-                chart.data.datasets = [{
-                    label: 'Stint Duration',
-                    data: data.map(item => item.lap_end - item.lap_start + 1),
-                    backgroundColor: colors.slice(0, data.length)
-                }];
-            } else if (section.startsWith('laps')) {
-                chart.data.labels = data.map(item => item.lap_number);
-                chart.data.datasets = [
-                    { label: 'Lap Duration', data: data.map(item => item.lap_duration), borderColor: color },
-                    { label: 'ST Speed', data: data.map(item => item.st_speed), borderColor: 'var(--f1-blue)' }
-                ];
-            }
-            chart.update();
-
-            // Update table
-            const table = document.getElementById(`${section}Table`);
-            table.innerHTML = '';
-            data.slice(0, 10).forEach((item, index) => {
-                const row = document.createElement('tr');
-                row.style.backgroundColor = colors[index % colors.length];
-                row.innerHTML = section.startsWith('pits') ? `
-                    <td class="p-2">${item.lap_number}</td>
-                    <td class="p-2">${item.pit_duration}</td>
-                    <td class="p-2">${item.date}</td>
-                ` : section.startsWith('carData') ? `
-                    <td class="p-2">${item.brake}</td>
-                    <td class="p-2">${item.drs}</td>
-                    <td class="p-2">${item.speed}</td>
-                    <td class="p-2">${item.throttle}</td>
-                ` : section.startsWith('stints') ? `
-                    <td class="p-2">${item.stint_number}</td>
-                    <td class="p-2">${item.compound}</td>
-                    <td class="p-2">${item.lap_start}</td>
-                    <td class="p-2">${item.lap_end}</td>
-                ` : `
-                    <td class="p-2">${item.lap_number}</td>
-                    <td class="p-2">${item.lap_duration}</td>
-                    <td class="p-2">${item.st_speed}</td>
-                `;
-                table.appendChild(row);
+            let csvContent = "timestamp,location,volume,speed\n";
+            rows.forEach(row => {
+                const cells = Array.from(row.getElementsByTagName('td'));
+                const rowData = cells.map(cell => `"${cell.textContent}"`).join(',');
+                csvContent += rowData + "\n";
             });
 
-            // Add filter functionality
-            document.getElementById(`${section}Filter`).addEventListener('input', (e) => {
-                const filter = e.target.value.toLowerCase();
-                table.innerHTML = '';
-                data.filter(item => 
-                    Object.values(item).some(val => 
-                        val.toString().toLowerCase().includes(filter)
-                    )
-                ).slice(0, 10).forEach((item, index) => {
-                    const row = document.createElement('tr');
-                    row.style.backgroundColor = colors[index % colors.length];
-                    row.innerHTML = section.startsWith('pits') ? `
-                        <td class="p-2">${item.lap_number}</td>
-                        <td class="p-2">${item.pit_duration}</td>
-                        <td class="p-2">${item.date}</td>
-                    ` : section.startsWith('carData') ? `
-                        <td class="p-2">${item.brake}</td>
-                        <td class="p-2">${item.drs}</td>
-                        <td class="p-2">${item.speed}</td>
-                        <td class="p-2">${item.throttle}</td>
-                    ` : section.startsWith('stints') ? `
-                        <td class="p-2">${item.stint_number}</td>
-                        <td class="p-2">${item.compound}</td>
-                        <td class="p-2">${item.lap_start}</td>
-                        <td class="p-2">${item.lap_end}</td>
-                    ` : `
-                        <td class="p-2">${item.lap_number}</td>
-                        <td class="p-2">${item.lap_duration}</td>
-                        <td class="p-2">${item.st_speed}</td>
-                    `;
-                    table.appendChild(row);
-                });
-            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'traffic_data_export.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
-
-        // Update dashboard from selects
-        function updateDashboardFromSelects() {
-            const driver1 = document.getElementById('driver1Select').value;
-            const driver2 = document.getElementById('driver2Select').value;
-            if (driver1) {
-                localStorage.setItem('driver1', driver1);
-                localStorage.setItem('driver2', driver2);
-                updateDashboard(driver1, driver2 || null);
-            }
-        }
-
-        // Event listeners
-        document.getElementById('driver1Select').addEventListener('change', updateDashboardFromSelects);
-        document.getElementById('driver2Select').addEventListener('change', updateDashboardFromSelects);
-
-        // Initialize and setup auto-update
-        initializeCharts();
-        fetchData();
-        updateInterval = setInterval(fetchData, 180000); // Update every 3 minutes
-
-        // Cleanup interval on page unload
-        window.addEventListener('unload', () => clearInterval(updateInterval));
     </script>
 </body>
 </html>
