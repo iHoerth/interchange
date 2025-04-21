@@ -3,433 +3,742 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sports Analytics Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Investment Portfolio Simulator</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .radar-container { position: relative; width: 100%; max-width: 600px; margin: 0 auto; }
-        .player-row:hover { background-color: #f5f5f5; cursor: pointer; }
-        .comparison-legend { display: flex; gap: 1rem; justify-content: center; margin-top: 1rem; }
-        .legend-item { display: flex; align-items: center; gap: 0.5rem; }
-        .color-box { width: 20px; height: 20px; border-radius: 4px; }
-        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
-        .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; }
-        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .close:hover { color: black; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #1a1a2e;
+            color: #e6e6e6;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        .sidebar {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #00adb5;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #00adb5;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #e6e6e6;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #0f3460;
+            border-radius: 5px;
+            background: #e6e6e6;
+            color: #1a1a2e;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #e94560;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #d32f2f;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .scenario-list, .suggestion-list, .news-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .scenario-item, .suggestion-item, .news-item {
+            padding: 10px;
+            border-bottom: 1px solid #0f3460;
+            color: #e6e6e6;
+        }
+
+        .scenario-item:hover, .suggestion-item:hover {
+            background-color: #0f3460;
+            cursor: pointer;
+        }
+
+        .news-item {
+            margin-bottom: 10px;
+        }
+
+        .news-item h3 {
+            color: #00adb5;
+            font-size: 14px;
+        }
+
+        .news-item p {
+            font-size: 12px;
+        }
+
+        .tab {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #0f3460;
+            border-radius: 5px;
+        }
     </style>
 </head>
-<body class="bg-gray-100 font-sans">
-    <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-bold text-center mb-6">Sports Analytics Dashboard</h1>
-
-        <!-- Tabs -->
-        <div class="flex justify-center mb-6">
-            <div class="bg-white rounded-lg shadow p-1">
-                <button class="tab-btn px-6 py-2 font-semibold text-gray-700 rounded hover:bg-gray-200" data-sport="soccer">Soccer</button>
-                <button class="tab-btn px-6 py-2 font-semibold text-gray-700 rounded hover:bg-gray-200" data-sport="basketball">Basketball</button>
-                <button class="tab-btn px-6 py-2 font-semibold text-gray-700 rounded hover:bg-gray-200" data-sport="baseball">Baseball</button>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>Portfolio Simulator</h1>
+            
+            <div class="input-group">
+                <label>Initial Investment ($)</label>
+                <input type="number" id="initialInvestment" value="10000">
             </div>
-        </div>
 
-        <!-- Tab Contents -->
-        <div id="soccer-content" class="tab-content">
-            <h2 class="text-2xl font-semibold mb-4 text-center">Soccer Players</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white p-4 rounded-lg shadow">
-                    <h3 class="text-xl font-semibold mb-2">Player List</h3>
-                    <div id="soccer-players" class="max-h-96 overflow-y-auto"></div>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow">
-                    <h3 class="text-xl font-semibold mb-2">Performance Comparison</h3>
-                    <div class="radar-container">
-                        <canvas id="soccer-radar"></canvas>
-                    </div>
-                    <div id="soccer-legend" class="comparison-legend"></div>
-                    <div class="mt-4 text-center">
-                        <button id="export-soccer-png" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Export PNG</button>
-                        <button id="export-soccer-jpeg" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Export JPEG</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="basketball-content" class="tab-content">
-            <h2 class="text-2xl font-semibold mb-4 text-center">Basketball Players</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white p-4 rounded-lg shadow">
-                    <h3 class="text-xl font-semibold mb-2">Player List</h3>
-                    <div id="basketball-players" class="max-h-96 overflow-y-auto"></div>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow">
-                    <h3 class="text-xl font-semibold mb-2">Performance Comparison</h3>
-                    <div class="radar-container">
-                        <canvas id="basketball-radar"></canvas>
-                    </div>
-                    <div id="basketball-legend" class="comparison-legend"></div>
-                    <div class="mt-4 text-center">
-                        <button id="export-basketball-png" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Export PNG</button>
-                        <button id="export-basketball-jpeg" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Export JPEG</button>
-                    </div>
+            <div class="tab">
+                <h2>Portfolio Setup</h2>
+                <div class="input-group">
+                    <label>Asset Allocation</label>
+                    <select id="assetSelect">
+                        <option value="AAPL">Apple (AAPL)</option>
+                        <option value="MSFT">Microsoft (MSFT)</option>
+                        <option value="TSLA">Tesla (TSLA)</option>
+                        <option value="^TNX">10-Year Treasury (^TNX)</option>
+                        <option value="BTC-USD">Bitcoin (BTC-USD)</option>
+                        <option value="ETH-USD">Ethereum (ETH-USD)</option>
+                        <option value="XRP-USD">Ripple (XRP-USD)</option>
+                        <option value="LTC-USD">Litecoin (LTC-USD)</option>
+                        <option value="BCH-USD">Bitcoin Cash (BCH-USD)</option>
+                        <option value="ADA-USD">Cardano (ADA-USD)</option>
+                        <option value="DOT-USD">Polkadot (DOT-USD)</option>
+                        <option value="LINK-USD">Chainlink (LINK-USD)</option>
+                        <option value="XLM-USD">Stellar (XLM-USD)</option>
+                        <option value="DOGE-USD">Dogecoin (DOGE-USD)</option>
+                    </select>
+                    <input type="number" id="allocationPercent" placeholder="Percentage">
+                    <button onclick="addAsset()">Add Asset</button>
                 </div>
             </div>
+
+            <div class="tab">
+                <h2>Macroeconomic Factors</h2>
+                <div class="input-group">
+                    <label>Interest Rate (%)</label>
+                    <input type="number" id="interestRate" step="0.1">
+                    <label>Inflation Rate (%)</label>
+                    <input type="number" id="inflationRate" step="0.1">
+                    <label>Market Volatility (%)</label>
+                    <input type="number" id="volatility" step="1">
+                    <label>Time Horizon (years)</label>
+                    <input type="number" id="timeHorizon" value="10">
+                </div>
+            </div>
+
+            <div class="tab">
+                <h2>PPF Analysis</h2>
+                <div class="input-group">
+                    <label>Asset 1</label>
+                    <select id="ppfAsset1" onchange="updatePPF()">
+                        <option value="AAPL">Apple (AAPL)</option>
+                        <option value="MSFT">Microsoft (MSFT)</option>
+                        <option value="TSLA">Tesla (TSLA)</option>
+                        <option value="^TNX">10-Year Treasury (^TNX)</option>
+                        <option value="BTC-USD">Bitcoin (BTC-USD)</option>
+                        <option value="ETH-USD">Ethereum (ETH-USD)</option>
+                    </select>
+                    <label>Asset 2</label>
+                    <select id="ppfAsset2" onchange="updatePPF()">
+                        <option value="MSFT">Microsoft (MSFT)</option>
+                        <option value="AAPL">Apple (AAPL)</option>
+                        <option value="TSLA">Tesla (TSLA)</option>
+                        <option value="^TNX">10-Year Treasury (^TNX)</option>
+                        <option value="BTC-USD">Bitcoin (BTC-USD)</option>
+                        <option value="ETH-USD">Ethereum (ETH-USD)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="tab">
+                <h2>Suggestions</h2>
+                <div class="input-group">
+                    <label>Risk Profile</label>
+                    <select id="riskProfile" onchange="suggestPortfolio()">
+                        <option value="low">Low Risk</option>
+                        <option value="medium">Medium Risk</option>
+                        <option value="high">High Risk</option>
+                    </select>
+                </div>
+                <div class="suggestion-list" id="suggestionList"></div>
+            </div>
+
+            <button onclick="runSimulation()">Run Simulation</button>
+            <button onclick="saveScenario()">Save Scenario</button>
+
+            <h2>Saved Scenarios</h2>
+            <div class="scenario-list" id="scenarioList"></div>
         </div>
 
-        <div id="baseball-content" class="tab-content">
-            <h2 class="text-2xl font-semibold mb-4 text-center">Baseball Players</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white p-4 rounded-lg shadow">
-                    <h3 class="text-xl font-semibold mb-2">Player List</h3>
-                    <div id="baseball-players" class="max-h-96 overflow-y-auto"></div>
+        <div class="main-content">
+            <div class="card">
+                <h2>Portfolio Growth</h2>
+                <div class="chart-container">
+                    <canvas id="growthChart"></canvas>
                 </div>
-                <div class="bg-white p-4 rounded-lg shadow">
-                    <h3 class="text-xl font-semibold mb-2">Performance Comparison</h3>
-                    <div class="radar-container">
-                        <canvas id="baseball-radar"></canvas>
+            </div>
+
+            <div class="card comparison-container">
+                <div>
+                    <h2>Optimal Strategy</h2>
+                    <div class="chart-container">
+                        <canvas id="optimalChart"></canvas>
                     </div>
-                    <div id="baseball-legend" class="comparison-legend"></div>
-                    <div class="mt-4 text-center">
-                        <button id="export-baseball-png" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Export PNG</button>
-                        <button id="export-baseball-jpeg" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Export JPEG</button>
+                </div>
+                <div>
+                    <h2>Current Strategy</h2>
+                    <div class="chart-container">
+                        <canvas id="currentChart"></canvas>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Report Modal -->
-        <div id="report-modal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2 class="text-xl font-semibold mb-4">Report Player Data Issue</h2>
-                <form id="report-form">
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Player Name</label>
-                        <input id="report-player-name" type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" readonly>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Issue Type</label>
-                        <select id="report-issue-type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                            <option value="incorrect">Incorrect Information</option>
-                            <option value="missing">Missing Information</option>
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea id="report-description" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" rows="4" required></textarea>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Evidence (e.g., URL, reference)</label>
-                        <input id="report-evidence" type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
-                    </div>
-                    <button type="submit" class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Submit Report</button>
-                </form>
+            <div class="card">
+                <h2>Production Possibility Frontier</h2>
+                <div class="chart-container">
+                    <canvas id="ppfChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Portfolio Summary</h2>
+                <div id="portfolioSummary"></div>
+            </div>
+
+            <div class="card">
+                <h2>Financial News</h2>
+                <div class="news-list" id="newsList"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // Known player IDs from TheSportsDB
-        const playerIds = {
-            soccer: [
-                34145937, 34145938, 34145939, 34145940, 34145941, 34145942, 34145943, 34145944, 34145945, 34145946, 34145947, 34145948, 34145949, 34145950, 34145951
-            ],
-            basketball: [
-                34153733, 34153734, 34153735, 34153736, 34153737, 34153738, 34153739, 34153740, 34153741, 34153742, 34153743, 34153744, 34153745, 34153746, 34153747
-            ],
-            baseball: [
-                34149401, 34149402, 34149403, 34149404, 34149405, 34149406, 34149407, 34149408, 34149409, 34149410, 34149411, 34149412, 34149413, 34149414, 34149415
-            ]
-        };
+        let portfolio = [];
+        let savedScenarios = [];
+        let growthChart, optimalChart, currentChart, ppfChart;
 
-        // Metrics for each sport
-        const metrics = {
-            soccer: ['Passing Accuracy', 'Dribbling', 'Tackling', 'Finishing', 'Defensive Actions'],
-            basketball: ['Points per Game', 'Assists per Game', 'Rebounds per Game', 'Steals per Game', 'Blocks per Game'],
-            baseball: ['Batting Average', 'Home Runs', 'Strikeouts', 'Walks', 'Stolen Bases']
-        };
-
-        // Chart instances
-        const charts = {
-            soccer: null,
-            basketball: null,
-            baseball: null
-        };
-
-        // Selected players for comparison
-        const selectedPlayers = {
-            soccer: [],
-            basketball: [],
-            baseball: []
-        };
-
-        // Reported players (for flagging)
-        const reportedPlayers = new Set();
-
-        // Colors for comparison
-        const colors = ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(75, 192, 192, 0.2)'];
-        const borderColors = ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(75, 192, 192, 1)'];
-
-        // Tab switching
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const sport = btn.dataset.sport;
-                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                document.getElementById(`${sport}-content`).classList.add('active');
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('bg-gray-200'));
-                btn.classList.add('bg-gray-200');
-            });
-        });
-
-        // Initialize first tab
-        document.querySelector('.tab-btn[data-sport="soccer"]').click();
-
-        // Fetch and display players
-        async function fetchPlayers(sport) {
-            const playersDiv = document.getElementById(`${sport}-players`);
-            playersDiv.innerHTML = 'Loading...';
-
-            const players = [];
-            const usedIds = new Set();
-            let index = 0;
-
-            while (players.length < 15 && index < playerIds[sport].length) {
-                const id = playerIds[sport][index];
-                if (usedIds.has(id)) {
-                    index++;
-                    continue;
-                }
-
-                try {
-                    const response = await fetch(`https://www.thesportsdb.com/api/v1/json/3/lookupplayer.php?id=${id}`);
-                    const data = await response.json();
-                    const player = data.players ? data.players[0] : null;
-
-                    if (player) {
-                        const performance = generateMockPerformance(sport);
-                        players.push({
-                            id: player.idPlayer,
-                            name: player.strPlayer,
-                            team: player.strTeam,
-                            performance: performance
-                        });
-                        usedIds.add(id);
+        // Initialize charts
+        function initializeCharts() {
+            growthChart = new Chart(document.getElementById('growthChart'), {
+                type: 'line',
+                data: { datasets: [] },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: false, grid: { color: '#0f3460' } },
+                        x: { grid: { color: '#0f3460' } }
                     }
-                } catch (error) {
-                    console.error(`Error fetching player ${id}:`, error);
                 }
-                index++;
-            }
+            });
 
-            while (players.length < 15) {
-                players.push({
-                    id: `mock-${sport}-${players.length}`,
-                    name: `Mock Player ${players.length + 1}`,
-                    team: `Mock Team`,
-                    performance: generateMockPerformance(sport)
-                });
-            }
+            optimalChart = new Chart(document.getElementById('optimalChart'), {
+                type: 'line',
+                data: { datasets: [] },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: false, grid: { color: '#0f3460' } },
+                        x: { grid: { color: '#0f3460' } }
+                    }
+                }
+            });
 
-            displayPlayers(sport, players);
+            currentChart = new Chart(document.getElementById('currentChart'), {
+                type: 'line',
+                data: { datasets: [] },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: false, grid: { color: '#0f3460' } },
+                        x: { grid: { color: '#0f3460' } }
+                    }
+                }
+            });
+
+            ppfChart = new Chart(document.getElementById('ppfChart'), {
+                type: 'scatter',
+                data: { datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Asset 1 Return', color: '#e6e6e6' },
+                            grid: { color: '#0f3460' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Asset 2 Return', color: '#e6e6e6' },
+                            grid: { color: '#0f3460' }
+                        }
+                    }
+                }
+            });
         }
 
-        function generateMockPerformance(sport) {
-            switch (sport) {
-                case 'soccer':
-                    return {
-                        'Passing Accuracy': Math.floor(Math.random() * 40) + 60,
-                        'Dribbling': Math.floor(Math.random() * 40) + 60,
-                        'Tackling': Math.floor(Math.random() * 40) + 60,
-                        'Finishing': Math.floor(Math.random() * 40) + 60,
-                        'Defensive Actions': Math.floor(Math.random() * 40) + 60
-                    };
-                case 'basketball':
-                    return {
-                        'Points per Game': Math.floor(Math.random() * 20) + 10,
-                        'Assists per Game': Math.floor(Math.random() * 10),
-                        'Rebounds per Game': Math.floor(Math.random() * 15),
-                        'Steals per Game': Math.floor(Math.random() * 5),
-                        'Blocks per Game': Math.floor(Math.random() * 3)
-                    };
-                case 'baseball':
-                    return {
-                        'Batting Average': Math.random() * 0.2 + 0.2,
-                        'Home Runs': Math.floor(Math.random() * 40),
-                        'Strikeouts': Math.floor(Math.random() * 100),
-                        'Walks': Math.floor(Math.random() * 80),
-                        'Stolen Bases': Math.floor(Math.random() * 50)
-                    };
+        async function fetchAssetData(symbol) {
+            try {
+                const response = await axios.get(
+                    `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`,
+                    {
+                        params: {
+                            range: '5y',
+                            interval: '1mo'
+                        }
+                    }
+                );
+                return response.data.chart.result[0].indicators.quote[0].close;
+            } catch (error) {
+                console.error('Error fetching asset data:', error);
+                return [];
             }
         }
 
-        function displayPlayers(sport, players) {
-            const playersDiv = document.getElementById(`${sport}-players`);
-            playersDiv.innerHTML = '';
+        async function fetchMacroData() {
+            try {
+                const interestResponse = await axios.get(
+                    'https://api.db.nomics.world/v22/series/FRED/DGS10?format=json'
+                );
+                const interestData = interestResponse.data.dataset.data.map(d => d[1]);
+                const interestAvg = interestData.slice(0, 60).reduce((a, b) => a + b) / 60;
 
-            players.forEach(player => {
-                const div = document.createElement('div');
-                div.className = 'player-row p-2 border-b';
-                const flag = reportedPlayers.has(player.id) ? '<span class="text-red-500 ml-2" title="Reported Issue">⚠️</span>' : '';
-                div.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="font-semibold">${player.name}${flag}</p>
-                            <p class="text-sm text-gray-600">${player.team}</p>
+                const inflationResponse = await axios.get(
+                    'https://api.db.nomics.world/v22/series/FRED/CPIAUCSL?format=json'
+                );
+                const inflationData = inflationResponse.data.dataset.data.map(d => d[1]);
+                const inflationRates = [];
+                for (let i = 1; i < inflationData.length; i++) {
+                    inflationRates.push(((inflationData[i] - inflationData[i-1]) / inflationData[i-1]) * 100);
+                }
+                const inflationAvg = inflationRates.slice(0, 60).reduce((a, b) => a + b) / 60;
+
+                document.getElementById('interestRate').value = interestAvg.toFixed(2);
+                document.getElementById('inflationRate').value = inflationAvg.toFixed(2);
+                document.getElementById('volatility').value = '15';
+            } catch (error) {
+                console.error('Error fetching macro data:', error);
+                document.getElementById('interestRate').value = '2.5';
+                document.getElementById('inflationRate').value = '2.0';
+                document.getElementById('volatility').value = '15';
+            }
+        }
+
+        async function fetchFinancialNews() {
+            try {
+                // Using NewsAPI as an example (you'll need to get your own API key)
+                const response = await axios.get(
+                    'https://newsapi.org/v2/everything',
+                    {
+                        params: {
+                            q: 'finance OR economics OR cryptocurrency OR stocks',
+                            language: 'en',
+                            sortBy: 'publishedAt',
+                            apiKey: 'YOUR_NEWSAPI_KEY' // Replace with your NewsAPI key
+                        }
+                    }
+                );
+
+                const articles = response.data.articles.slice(0, 5);
+                const newsList = document.getElementById('newsList');
+                newsList.innerHTML = articles.map(article => {
+                    // Simple keyword matching for affected assets
+                    const affectedAssets = [];
+                    const content = (article.title + ' ' + article.description).toLowerCase();
+                    const availableAssets = [
+                        'AAPL', 'MSFT', 'TSLA', '^TNX',
+                        'BTC-USD', 'ETH-USD', 'XRP-USD', 'LTC-USD',
+                        'BCH-USD', 'ADA-USD', 'DOT-USD', 'LINK-USD',
+                        'XLM-USD', 'DOGE-USD'
+                    ];
+
+                    availableAssets.forEach(asset => {
+                        if (content.includes(asset.toLowerCase().replace('-usd', ''))) {
+                            affectedAssets.push(asset);
+                        }
+                    });
+
+                    return `
+                        <div class="news-item">
+                            <h3>${article.title}</h3>
+                            <p>${article.description}</p>
+                            <p>Affected Assets: ${affectedAssets.length > 0 ? affectedAssets.join(', ') : 'None'}</p>
+                            <p>Published: ${new Date(article.publishedAt).toLocaleString()}</p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button class="report-btn text-blue-500 hover:underline" data-id="${player.id}" data-name="${player.name}">Report</button>
-                            <input type="checkbox" class="player-checkbox" data-sport="${sport}" data-id="${player.id}" data-name="${player.name}">
-                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error fetching news:', error);
+                document.getElementById('newsList').innerHTML = `
+                    <div class="news-item">
+                        <p>Unable to fetch news at this time.</p>
                     </div>
                 `;
-                playersDiv.appendChild(div);
-            });
-
-            document.querySelectorAll(`#${sport}-players .player-checkbox`).forEach(checkbox => {
-                checkbox.addEventListener('change', (e) => {
-                    const playerId = e.target.dataset.id;
-                    const playerName = e.target.dataset.name;
-                    const player = players.find(p => p.id === playerId);
-
-                    if (e.target.checked) {
-                        if (selectedPlayers[sport].length < 3) {
-                            selectedPlayers[sport].push({ ...player, name: playerName });
-                        } else {
-                            e.target.checked = false;
-                            alert('Maximum 3 players can be compared');
-                        }
-                    } else {
-                        selectedPlayers[sport] = selectedPlayers[sport].filter(p => p.id !== playerId);
-                    }
-
-                    updateRadarChart(sport);
-                });
-            });
-
-            document.querySelectorAll(`#${sport}-players .report-btn`).forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const playerId = e.target.dataset.id;
-                    const playerName = e.target.dataset.name;
-                    openReportModal(playerId, playerName);
-                });
-            });
+            }
         }
 
-        function updateRadarChart(sport) {
-            const ctx = document.getElementById(`${sport}-radar`).getContext('2d');
-            const legendDiv = document.getElementById(`${sport}-legend`);
+        function addAsset() {
+            const symbol = document.getElementById('assetSelect').value;
+            const percent = parseFloat(document.getElementById('allocationPercent').value);
+            
+            if (percent && percent > 0 && percent <= 100) {
+                portfolio.push({ symbol, allocation: percent / 100 });
+                document.getElementById('allocationPercent').value = '';
+                suggestPortfolio();
+                updatePPF();
+            }
+        }
 
-            if (charts[sport]) {
-                charts[sport].destroy();
+        async function updatePPF() {
+            const asset1 = document.getElementById('ppfAsset1').value;
+            const asset2 = document.getElementById('ppfAsset2').value;
+
+            if (asset1 === asset2) return;
+
+            const data1 = await fetchAssetData(asset1);
+            const data2 = await fetchAssetData(asset2);
+
+            if (!data1.length || !data2.length) return;
+
+            const returns1 = calculateReturns(data1);
+            const returns2 = calculateReturns(data2);
+
+            // Generate PPF points
+            const ppfPoints = [];
+            for (let w1 = 0; w1 <= 1; w1 += 0.1) {
+                const w2 = 1 - w1;
+                const portfolioReturn1 = w1 * returns1.mean;
+                const portfolioReturn2 = w2 * returns2.mean;
+                ppfPoints.push({
+                    x: portfolioReturn1 * 100,
+                    y: portfolioReturn2 * 100
+                });
             }
 
-            const datasets = selectedPlayers[sport].map((player, index) => ({
-                label: player.name,
-                data: metrics[sport].map(metric => player.performance[metric]),
-                backgroundColor: colors[index],
-                borderColor: borderColors[index],
-                borderWidth: 2
-            }));
+            ppfChart.data = {
+                datasets: [{
+                    label: 'PPF Curve',
+                    data: ppfPoints,
+                    borderColor: '#f8b500',
+                    fill: false,
+                    showLine: true
+                }],
+                labels: ['PPF']
+            };
 
-            charts[sport] = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: metrics[sport],
-                    datasets: datasets
-                },
-                options: {
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            suggestedMax: sport === 'soccer' ? 100 : undefined
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'bottom'
-                        }
-                    }
+            ppfChart.options.scales.x.title.text = `${asset1} Return (%)`;
+            ppfChart.options.scales.y.title.text = `${asset2} Return (%)`;
+            ppfChart.update();
+        }
+
+        function calculateReturns(data) {
+            const returns = [];
+            for (let i = 1; i < data.length; i++) {
+                returns.push((data[i] - data[i-1]) / data[i-1]);
+            }
+            const mean = returns.reduce((a, b) => a + b) / returns.length;
+            return { mean, returns };
+        }
+
+        async function runSimulation() {
+            const initialInvestment = parseFloat(document.getElementById('initialInvestment').value);
+            const interestRate = parseFloat(document.getElementById('interestRate').value) / 100;
+            const inflationRate = parseFloat(document.getElementById('inflationRate').value) / 100;
+            const volatility = parseFloat(document.getElementById('volatility').value) / 100;
+            const timeHorizon = parseInt(document.getElementById('timeHorizon').value);
+
+            const assetData = {};
+            for (let asset of portfolio) {
+                assetData[asset.symbol] = await fetchAssetData(asset.symbol);
+            }
+
+            const growthData = simulatePortfolio(
+                initialInvestment,
+                portfolio,
+                assetData,
+                interestRate,
+                inflationRate,
+                volatility,
+                timeHorizon
+            );
+
+            updateCharts(growthData, timeHorizon);
+            updateSummary(growthData);
+        }
+
+        function simulatePortfolio(initial, portfolio, assetData, interestRate, inflation, volatility, years) {
+            const returns = [];
+            let currentValue = initial;
+
+            for (let year = 0; year < years; year++) {
+                let yearReturn = 0;
+                for (let asset of portfolio) {
+                    const historicalReturns = assetData[asset.symbol];
+                    const avgReturn = calculateAverageReturn(historicalReturns);
+                    const randomFactor = (Math.random() - 0.5) * volatility;
+                    yearReturn += (avgReturn + randomFactor - inflation) * asset.allocation;
                 }
-            });
-
-            legendDiv.innerHTML = '';
-            selectedPlayers[sport].forEach((player, index) => {
-                const legendItem = document.createElement('div');
-                legendItem.className = 'legend-item';
-                legendItem.innerHTML = `
-                    <div class="color-box" style="background-color: ${colors[index]}"></div>
-                    <span>${player.name}</span>
-                `;
-                legendDiv.appendChild(legendItem);
-            });
-        }
-
-        function exportChart(sport, format) {
-            const chart = charts[sport];
-            if (!chart) {
-                alert('Please select players to compare first');
-                return;
+                
+                currentValue *= (1 + yearReturn - interestRate);
+                returns.push(currentValue);
             }
 
-            const canvas = document.getElementById(`${sport}-radar`);
-            const link = document.createElement('a');
-            link.download = `${sport}-comparison.${format}`;
-            link.href = canvas.toDataURL(`image/${format}`);
-            link.click();
+            return returns;
         }
 
-        // Modal handling
-        const modal = document.getElementById('report-modal');
-        const closeBtn = document.querySelector('.close');
-        const reportForm = document.getElementById('report-form');
-
-        function openReportModal(playerId, playerName) {
-            document.getElementById('report-player-name').value = playerName;
-            modal.style.display = 'block';
-            reportForm.dataset.playerId = playerId;
-        }
-
-        closeBtn.onclick = function() {
-            modal.style.display = 'none';
-        };
-
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = 'none';
+        function calculateAverageReturn(data) {
+            if (!data || data.length < 2) return 0.07;
+            const returns = [];
+            for (let i = 1; i < data.length; i++) {
+                returns.push((data[i] - data[i-1]) / data[i-1]);
             }
-        };
+            return returns.reduce((a, b) => a + b) / returns.length;
+        }
 
-        reportForm.onsubmit = function(e) {
-            e.preventDefault();
-            const playerId = reportForm.dataset.playerId;
-            const issueType = document.getElementById('report-issue-type').value;
-            const description = document.getElementById('report-description').value;
-            const evidence = document.getElementById('report-evidence').value;
+        function updateCharts(data, years) {
+            const labels = Array.from({ length: years }, (_, i) => `Year ${i + 1}`);
+            
+            growthChart.data = {
+                labels,
+                datasets: [{
+                    label: 'Portfolio Value',
+                    data: data,
+                    borderColor: '#e94560',
+                    fill: false
+                }]
+            };
+            growthChart.update();
 
-            // Simulate submitting a ticket (in a real app, this would be an API call)
-            console.log('Submitting report:', { playerId, issueType, description, evidence });
-            reportedPlayers.add(playerId);
+            const optimalData = data.map(v => v * 1.1);
+            optimalChart.data = {
+                labels,
+                datasets: [{
+                    label: 'Optimal Value',
+                    data: optimalData,
+                    borderColor: '#00adb5',
+                    fill: false
+                }]
+            };
+            optimalChart.update();
 
-            // Refresh player list to show the flag
-            const sport = document.querySelector('.tab-content.active').id.split('-')[0];
-            fetchPlayers(sport);
+            currentChart.data = {
+                labels,
+                datasets: [{
+                    label: 'Current Value',
+                    data: data,
+                    borderColor: '#f8b500',
+                    fill: false
+                }]
+            };
+            currentChart.update();
+        }
 
-            modal.style.display = 'none';
-            reportForm.reset();
-            alert('Report submitted successfully!');
-        };
+        function updateSummary(data) {
+            const summary = document.getElementById('portfolioSummary');
+            const finalValue = data[data.length - 1];
+            const initial = parseFloat(document.getElementById('initialInvestment').value);
+            const totalReturn = ((finalValue - initial) / initial * 100).toFixed(2);
+            
+            summary.innerHTML = `
+                <p>Final Value: $${finalValue.toFixed(2)}</p>
+                <p>Total Return: ${totalReturn}%</p>
+                <p>Asset Allocation:</p>
+                <ul>
+                    ${portfolio.map(asset => `
+                        <li>${asset.symbol}: ${(asset.allocation * 100).toFixed(1)}%</li>
+                    `).join('')}
+                </ul>
+            `;
+        }
 
-        // Add export button event listeners
-        ['soccer', 'basketball', 'baseball'].forEach(sport => {
-            document.getElementById(`export-${sport}-png`).addEventListener('click', () => exportChart(sport, 'png'));
-            document.getElementById(`export-${sport}-jpeg`).addEventListener('click', () => exportChart(sport, 'jpeg'));
+        function saveScenario() {
+            const scenario = {
+                initial: document.getElementById('initialInvestment').value,
+                portfolio: [...portfolio],
+                interestRate: document.getElementById('interestRate').value,
+                inflationRate: document.getElementById('inflationRate').value,
+                volatility: document.getElementById('volatility').value,
+                timeHorizon: document.getElementById('timeHorizon').value,
+                name: `Scenario ${savedScenarios.length + 1}`
+            };
+            
+            savedScenarios.push(scenario);
+            updateScenarioList();
+        }
+
+        function updateScenarioList() {
+            const list = document.getElementById('scenarioList');
+            list.innerHTML = savedScenarios.map((scenario, index) => `
+                <div class="scenario-item" onclick="loadScenario(${index})">
+                    ${scenario.name}
+                </div>
+            `).join('');
+        }
+
+        function loadScenario(index) {
+            const scenario = savedScenarios[index];
+            document.getElementById('initialInvestment').value = scenario.initial;
+            document.getElementById('interestRate').value = scenario.interestRate;
+            document.getElementById('inflationRate').value = scenario.inflationRate;
+            document.getElementById('volatility').value = scenario.volatility;
+            document.getElementById('timeHorizon').value = scenario.timeHorizon;
+            portfolio = [...scenario.portfolio];
+            runSimulation();
+        }
+
+        function suggestPortfolio() {
+            const riskProfile = document.getElementById('riskProfile').value;
+            const suggestionList = document.getElementById('suggestionList');
+            let suggestedPortfolio;
+
+            const assetStats = {
+                'AAPL': { return: 0.15, risk: 0.25 },
+                'MSFT': { return: 0.12, risk: 0.20 },
+                'TSLA': { return: 0.20, risk: 0.35 },
+                '^TNX': { return: 0.03, risk: 0.05 },
+                'BTC-USD': { return: 0.30, risk: 0.50 },
+                'ETH-USD': { return: 0.25, risk: 0.45 },
+                'XRP-USD': { return: 0.22, risk: 0.40 },
+                'LTC-USD': { return: 0.20, risk: 0.38 },
+                'BCH-USD': { return: 0.23, risk: 0.42 },
+                'ADA-USD': { return: 0.18, risk: 0.35 },
+                'DOT-USD': { return: 0.19, risk: 0.37 },
+                'LINK-USD': { return: 0.21, risk: 0.39 },
+                'XLM-USD': { return: 0.17, risk: 0.34 },
+                'DOGE-USD': { return: 0.25, risk: 0.48 }
+            };
+
+            switch (riskProfile) {
+                case 'low':
+                    suggestedPortfolio = [
+                        { symbol: '^TNX', allocation: 0.70 },
+                        { symbol: 'MSFT', allocation: 0.20 },
+                        { symbol: 'AAPL', allocation: 0.10 }
+                    ];
+                    break;
+                case 'medium':
+                    suggestedPortfolio = [
+                        { symbol: '^TNX', allocation: 0.40 },
+                        { symbol: 'MSFT', allocation: 0.30 },
+                        { symbol: 'AAPL', allocation: 0.20 },
+                        { symbol: 'ETH-USD', allocation: 0.10 }
+                    ];
+                    break;
+                case 'high':
+                    suggestedPortfolio = [
+                        { symbol: 'BTC-USD', allocation: 0.30 },
+                        { symbol: 'TSLA', allocation: 0.30 },
+                        { symbol: 'ETH-USD', allocation: 0.20 },
+                        { symbol: 'AAPL', allocation: 0.20 }
+                    ];
+                    break;
+            }
+
+            let portfolioReturn = 0;
+            let portfolioRisk = 0;
+            suggestedPortfolio.forEach(asset => {
+                portfolioReturn += assetStats[asset.symbol].return * asset.allocation;
+                portfolioRisk += Math.pow(assetStats[asset.symbol].risk * asset.allocation, 2);
+            });
+            portfolioRisk = Math.sqrt(portfolioRisk);
+
+            suggestionList.innerHTML = `
+                <div class="suggestion-item">
+                    <p>Suggested Allocation:</p>
+                    <ul>
+                        ${suggestedPortfolio.map(asset => `
+                            <li>${asset.symbol}: ${(asset.allocation * 100).toFixed(1)}%</li>
+                        `).join('')}
+                    </ul>
+                    <p>Expected Return: ${(portfolioReturn * 100).toFixed(2)}%</p>
+                    <p>Portfolio Risk: ${(portfolioRisk * 100).toFixed(2)}%</p>
+                    <button onclick="applySuggestion(${JSON.stringify(suggestedPortfolio)})">
+                        Apply Suggestion
+                    </button>
+                </div>
+            `;
+        }
+
+        function applySuggestion(suggestedPortfolio) {
+            portfolio = JSON.parse(suggestedPortfolio);
+            runSimulation();
+            updatePPF();
+        }
+
+        // Initialize the app
+        initializeCharts();
+        fetchMacroData().then(() => {
+            suggestPortfolio();
+            updatePPF();
+            fetchFinancialNews();
         });
-
-        // Fetch players for all sports
-        fetchPlayers('soccer');
-        fetchPlayers('basketball');
-        fetchPlayers('baseball');
     </script>
 </body>
 </html>
