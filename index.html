@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STEM Learning Platform</title>
+    <title>Health Clinic Appointment Portal</title>
     <style>
         * {
             margin: 0;
@@ -13,618 +13,507 @@
         }
 
         body {
-            line-height: 1.6;
-            background-color: #f5f5f5;
+            background-color: #f0f2f5;
             color: #333;
+            line-height: 1.6;
+            padding: 20px;
         }
 
-        /* Header and Navigation */
-        header {
-            background-color: #2c3e50;
-            padding: 1rem;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .nav-container {
+        .container {
             max-width: 1200px;
             margin: 0 auto;
+        }
+
+        .login-container {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
+            height: 100vh;
         }
 
-        .logo {
-            color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .search-bar {
-            flex-grow: 1;
-            margin: 0 2rem;
-            position: relative;
-        }
-
-        .search-bar input {
-            width: 100%;
-            padding: 0.5rem 2rem 0.5rem 1rem;
-            border: none;
-            border-radius: 20px;
-        }
-
-        .hamburger {
-            display: none;
-            font-size: 1.5rem;
-            color: white;
-            cursor: pointer;
-        }
-
-        nav ul {
-            list-style: none;
-            display: flex;
-            gap: 2rem;
-        }
-
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        nav ul li a:hover {
-            color: #3498db;
-        }
-
-        /* Enhanced Carousel */
-        .carousel {
-            margin-top: 80px;
-            padding: 2rem;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-            position: relative;
-            overflow: hidden;
-            user-select: none;
-        }
-
-        .carousel-container {
-            display: flex;
-            position: relative;
-            height: 350px;
-        }
-
-        .carousel-item {
-            position: absolute;
-            width: 300px;
-            background-color: white;
-            padding: 1rem;
+        .login-form {
+            background: white;
+            padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            text-align: center;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .carousel-item.active {
-            opacity: 1;
-            z-index: 2;
-        }
-
-        .carousel-item img {
             width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 8px;
+            max-width: 400px;
         }
 
-        .carousel-controls {
-            position: absolute;
-            top: 50%;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            transform: translateY(-50%);
-            z-index: 3;
+        .dashboard {
+            display: none;
         }
 
-        .carousel-button {
-            background-color: rgba(0,0,0,0.5);
+        .header {
+            background: #2c3e50;
             color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            border-radius: 50%;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 20px;
         }
 
-        /* Testimonials */
-        .testimonials {
-            padding: 2rem;
-            background-color: #fff;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .filter-buttons {
-            margin-bottom: 1rem;
+        .controls {
             display: flex;
-            gap: 1rem;
             flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
-        .filter-btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            background-color: #3498db;
-            color: white;
-            border-radius: 20px;
+        .summary-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .calendar {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .calendar-day {
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .calendar-day:focus {
+            outline: 2px solid #3498db;
+            outline-offset: 2px;
+        }
+
+        .time-slots {
+            display: none;
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+            z-index: 1;
+            width: 150px;
+        }
+
+        .time-slot {
+            padding: 5px;
+            margin: 2px 0;
+            border-radius: 4px;
             cursor: pointer;
         }
 
-        .filter-btn.active {
-            background-color: #2c3e50;
+        .time-slot:focus {
+            outline: 2px solid #3498db;
+            outline-offset: 2px;
         }
 
-        .testimonial-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1rem;
+        .time-slot.available {
+            background-color: #ccffcc;
         }
 
-        .testimonial-card {
-            background-color: #f5f5f5;
-            padding: 1rem;
-            border-radius: 8px;
+        .time-slot.booked {
+            background-color: #ffcccc;
+            cursor: not-allowed;
         }
 
-        /* Webinars */
-        .webinars {
-            padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .webinar-item {
-            background-color: white;
-            margin-bottom: 1rem;
+        .appointments {
+            background: white;
+            padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .webinar-header {
-            padding: 1rem;
-            cursor: pointer;
+        .appointment-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            animation: slideIn 0.3s ease-in;
         }
 
-        .webinar-details {
-            padding: 1rem;
-            display: none;
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
-        .webinar-details.show {
-            display: block;
-        }
-
-        /* Infographics */
-        .infographics {
-            padding: 2rem;
-            background-color: #fff;
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-        }
-
-        .info-card {
-            position: relative;
-            padding: 1rem;
-            text-align: center;
-            background-color: #3498db;
-            color: white;
-            border-radius: 8px;
-        }
-
-        .info-details {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            background-color: rgba(0,0,0,0.8);
-            color: white;
-            padding: 1rem;
-            display: none;
-            z-index: 10;
-            border-radius: 0 0 8px 8px;
-        }
-
-        .info-card:hover .info-details {
-            display: block;
-        }
-
-        /* Learning Path */
-        .learning-path {
-            padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .path-container {
-            position: relative;
-            height: 200px;
-        }
-
-        .path-line {
-            position: absolute;
-            width: 100%;
-            height: 4px;
-            background-color: #3498db;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .milestone {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background-color: #2c3e50;
-            border-radius: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
 
-        .milestone-info {
-            position: absolute;
-            background-color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: none;
-            width: 200px;
+        button:focus {
+            outline: 2px solid #3498db;
+            outline-offset: 2px;
         }
 
-        .milestone:hover .milestone-info {
-            display: block;
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
         }
 
-        /* Responsive Design */
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .specialty-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
         @media (max-width: 768px) {
-            .hamburger {
-                display: block;
-            }
-
-            nav {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                width: 100%;
-                background-color: #2c3e50;
-            }
-
-            nav.active {
-                display: block;
-            }
-
-            nav ul {
+            .controls {
                 flex-direction: column;
-                padding: 1rem;
             }
 
-            nav ul li {
-                margin: 0.5rem 0;
+            .calendar-grid {
+                grid-template-columns: repeat(3, 1fr);
             }
+        }
 
-            .search-bar {
-                margin: 1rem 0;
-            }
-
-            .carousel-item {
-                width: 100%;
+        @media (max-width: 480px) {
+            .calendar-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="nav-container">
-            <div class="logo">STEM Learn</div>
-            <div class="search-bar">
-                <input type="text" placeholder="Search for courses...">
+    <div class="container">
+        <div class="login-container" id="loginContainer">
+            <div class="login-form">
+                <h2>Login to Clinic Portal</h2>
+                <input type="text" id="username" placeholder="Username" style="width: 100%; padding: 8px; margin: 10px 0;" autofocus>
+                <input type="password" id="password" placeholder="Password" style="width: 100%; padding: 8px; margin: 10px 0;">
+                <button class="btn-primary" onclick="login()">Login</button>
             </div>
-            <div class="hamburger">☰</div>
-            <nav>
-                <ul>
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#">Courses</a></li>
-                    <li><a href="#">About</a></li>
-                    <li><a href="#">Contact</a></li>
-                </ul>
-            </nav>
         </div>
-    </header>
 
-    <section class="carousel">
-        <div class="carousel-container">
-            <div class="carousel-item" data-src="https://via.placeholder.com/300x200?text=Robotics">
-                <img loading="lazy" alt="Robotics">
-                <h3>Robotics</h3>
-                <p>Learn to build and program robots</p>
+        <div class="dashboard" id="dashboard">
+            <div class="header">
+                <h1>Health Clinic Appointment Portal</h1>
+                <button class="btn-danger" onclick="logout()">Logout</button>
             </div>
-            <div class="carousel-item" data-src="https://via.placeholder.com/300x200?text=Programming">
-                <img loading="lazy" alt="Programming">
-                <h3>Programming</h3>
-                <p>Master coding fundamentals</p>
-            </div>
-            <div class="carousel-item" data-src="https://via.placeholder.com/300x200?text=Mathematics">
-                <img loading="lazy" alt="Mathematics">
-                <h3>Mathematics</h3>
-                <p>Explore advanced math concepts</p>
-            </div>
-            <div class="carousel-item" data-src="https://via.placeholder.com/300x200?text=Science">
-                <img loading="lazy" alt="Science">
-                <h3>Science</h3>
-                <p>Discover scientific principles</p>
-            </div>
-        </div>
-        <div class="carousel-controls">
-            <button class="carousel-button prev">❮</button>
-            <button class="carousel-button next">❯</button>
-        </div>
-    </section>
 
-    <section class="testimonials">
-        <h2>Student Success Stories</h2>
-        <div class="filter-buttons">
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="robotics">Robotics</button>
-            <button class="filter-btn" data-filter="programming">Programming</button>
-            <button class="filter-btn" data-filter="math">Mathematics</button>
-        </div>
-        <div class="testimonial-grid">
-            <div class="testimonial-card" data-category="robotics">
-                <p>"The robotics course transformed my career!"</p>
-                <p>- Sarah J.</p>
+            <div class="summary-panel" id="summaryPanel">
+                <h2>Upcoming Appointments Summary</h2>
+                <div id="summaryContent"></div>
             </div>
-            <div class="testimonial-card" data-category="programming">
-                <p>"I landed my dream job thanks to the coding skills I learned."</p>
-                <p>- Michael R.</p>
-            </div>
-            <div class="testimonial-card" data-category="math">
-                <p>"The math course made complex concepts so clear."</p>
-                <p>- Emily T.</p>
-            </div>
-        </div>
-    </section>
 
-    <section class="webinars">
-        <h2>Upcoming Webinars</h2>
-        <div class="webinar-item">
-            <div class="webinar-header">
-                <h3>Introduction to Robotics</h3>
-                <span>▼</span>
+            <div class="controls">
+                <select id="monthSelect" onchange="updateCalendar()">
+                    <option value="0">January</option>
+                    <option value="1">February</option>
+                    <option value="2">March</option>
+                    <option value="3">April</option>
+                    <option value="4">May</option>
+                    <option value="5">June</option>
+                    <option value="6">July</option>
+                    <option value="7">August</option>
+                    <option value="8">September</option>
+                    <option value="9">October</option>
+                    <option value="10">November</option>
+                    <option value="11">December</option>
+                </select>
+                <select id="specialtySelect" onchange="updateAppointments()">
+                    <option value="">All Specialties</option>
+                    <option value="General">General Medicine</option>
+                    <option value="Cardiology">Cardiology</option>
+                    <option value="Dermatology">Dermatology</option>
+                </select>
+                <select id="timeSelect">
+                    <option value="09:00">09:00 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="13:00">01:00 PM</option>
+                    <option value="14:00">02:00 PM</option>
+                    <option value="15:00">03:00 PM</option>
+                </select>
+                <button class="btn-primary" onclick="bookAppointment()">Book Appointment</button>
             </div>
-            <div class="webinar-details">
-                <p>Date: May 15, 2024</p>
-                <p>Time: 2:00 PM EST</p>
-                <p>Learn the basics of robotics engineering</p>
-            </div>
-        </div>
-        <div class="webinar-item">
-            <div class="webinar-header">
-                <h3>Python Programming Basics</h3>
-                <span>▼</span>
-            </div>
-            <div class="webinar-details">
-                <p>Date: May 20, 2024</p>
-                <p>Time: 3:00 PM EST</p>
-                <p>Get started with Python programming</p>
-            </div>
-        </div>
-    </section>
 
-    <section class="infographics">
-        <h2>Learning Impact</h2>
-        <div class="info-card">
-            <h3>95%</h3>
-            <p>Course Completion Rate</p>
-            <div class="info-details">
-                <p>95% of our students complete their courses successfully</p>
-            </div>
-        </div>
-        <div class="info-card">
-            <h3>80%</h3>
-            <p>Job Placement</p>
-            <div class="info-details">
-                <p>80% of graduates find STEM jobs within 6 months</p>
-            </div>
-        </div>
-        <div class="info-card">
-            <h3>10K+</h3>
-            <p>Active Students</p>
-            <div class="info-details">
-                <p>Join over 10,000 students learning with us</p>
-            </div>
-        </div>
-    </section>
+            <div class="calendar" id="calendar"></div>
 
-    <section class="learning-path">
-        <h2>Your Learning Journey</h2>
-        <div class="path-container">
-            <div class="path-line"></div>
-            <div class="milestone" style="left: 20%;">
-                <div class="milestone-info">Start: Course Selection</div>
-            </div>
-            <div class="milestone" style="left: 40%;">
-                <div class="milestone-info">Core Concepts</div>
-            </div>
-            <div class="milestone" style="left: 60%;">
-                <div class="milestone-info">Projects & Practice</div>
-            </div>
-            <div class="milestone" style="left: 80%;">
-                <div class="milestone-info">Certification</div>
+            <div class="appointments">
+                <h2>Your Appointments</h2>
+                <div id="appointmentList"></div>
             </div>
         </div>
-    </section>
+    </div>
 
     <script>
-        // DOM Elements Cache
-        const elements = {
-            hamburger: document.querySelector('.hamburger'),
-            nav: document.querySelector('nav'),
-            carousel: document.querySelector('.carousel'),
-            carouselItems: document.querySelectorAll('.carousel-item'),
-            prevButton: document.querySelector('.prev'),
-            nextButton: document.querySelector('.next'),
-            filterButtons: document.querySelectorAll('.filter-btn'),
-            testimonials: document.querySelectorAll('.testimonial-card'),
-            webinarHeaders: document.querySelectorAll('.webinar-header')
+        const validCredentials = { username: 'user', password: 'password123' };
+        let appointments = [];
+        let selectedDay = null;
+
+        const specialties = {
+            'General': { color: '#3498db', doctor: 'Dr. Smith' },
+            'Cardiology': { color: '#e74c3c', doctor: 'Dr. Johnson' },
+            'Dermatology': { color: '#2ecc71', doctor: 'Dr. Williams' }
         };
 
-        // Menu Toggle Module
-        const MenuToggle = {
-            toggleNav() {
-                elements.nav.classList.toggle('active');
-            },
-            handleResize() {
-                if (window.innerWidth > 768 && elements.nav.classList.contains('active')) {
-                    elements.nav.classList.remove('active');
-                }
+        const timeSlots = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00'];
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === validCredentials.username && password === validCredentials.password) {
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                updateCalendar();
+                updateAppointments();
+                updateSummary();
+            } else {
+                alert('Invalid credentials');
             }
-        };
+        }
 
-        // Carousel Module
-        const Carousel = {
-            currentIndex: 0,
-            touchStartX: 0,
-            touchMoveX: 0,
-            isDragging: false,
-            autoSlideInterval: null,
+        function logout() {
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
 
-            showSlide(index) {
-                if (index >= elements.carouselItems.length) index = 0;
-                if (index < 0) index = elements.carouselItems.length - 1;
-
-                elements.carouselItems.forEach((item, i) => {
-                    item.classList.remove('active');
-                    if (i === index) {
-                        item.classList.add('active');
-                        const img = item.querySelector('img');
-                        if (!img.src) img.src = item.dataset.src;
-                    }
-                });
-                this.currentIndex = index;
-            },
-
-            nextSlide() {
-                this.showSlide(this.currentIndex + 1);
-            },
-
-            prevSlide() {
-                this.showSlide(this.currentIndex - 1);
-            },
-
-            startAutoSlide() {
-                this.autoSlideInterval = setInterval(() => this.nextSlide(), 5000);
-            },
-
-            stopAutoSlide() {
-                clearInterval(this.autoSlideInterval);
-            },
-
-            handleTouchStart(e) {
-                this.touchStartX = e.touches[0].clientX;
-                this.isDragging = true;
-                this.stopAutoSlide();
-            },
-
-            handleTouchMove(e) {
-                if (!this.isDragging) return;
-                this.touchMoveX = e.touches[0].clientX;
-            },
-
-            handleTouchEnd() {
-                if (!this.isDragging) return;
-                this.isDragging = false;
-                const diff = this.touchStartX - this.touchMoveX;
-                if (Math.abs(diff) > 50) {
-                    if (diff > 0) this.nextSlide();
-                    else this.prevSlide();
-                }
-                this.startAutoSlide();
-            },
-
-            init() {
-                this.showSlide(0);
-                this.startAutoSlide();
-            }
-        };
-
-        // Testimonial Filter Module
-        const TestimonialFilter = {
-            filterTestimonials(filter) {
-                elements.filterButtons.forEach(btn => btn.classList.remove('active'));
-                event.target.classList.add('active');
-
-                elements.testimonials.forEach(testimonial => {
-                    testimonial.style.display = filter === 'all' || 
-                        testimonial.dataset.category === filter ? 'block' : 'none';
-                });
-            }
-        };
-
-        // Webinar Accordion Module
-        const WebinarAccordion = {
-            toggleDetails(header) {
-                const details = header.nextElementSibling;
-                details.classList.toggle('show');
-                const arrow = header.querySelector('span');
-                arrow.textContent = details.classList.contains('show') ? '▲' : '▼';
-            }
-        };
-
-        // Event Listeners
-        const initEventListeners = () => {
-            // Menu Toggle Events
-            elements.hamburger.addEventListener('click', MenuToggle.toggleNav);
-            window.addEventListener('resize', MenuToggle.handleResize);
-
-            // Carousel Events
-            elements.prevButton.addEventListener('click', () => Carousel.prevSlide());
-            elements.nextButton.addEventListener('click', () => Carousel.nextSlide());
-            elements.carousel.addEventListener('touchstart', (e) => Carousel.handleTouchStart(e));
-            elements.carousel.addEventListener('touchmove', (e) => Carousel.handleTouchMove(e));
-            elements.carousel.addEventListener('touchend', () => Carousel.handleTouchEnd());
-            elements.carousel.addEventListener('mouseenter', () => Carousel.stopAutoSlide());
-            elements.carousel.addEventListener('mouseleave', () => Carousel.startAutoSlide());
-
-            // Testimonial Filter Events
-            elements.filterButtons.forEach(button => {
-                button.addEventListener('click', () => 
-                    TestimonialFilter.filterTestimonials(button.dataset.filter));
+        function updateSummary() {
+            const summaryContent = document.getElementById('summaryContent');
+            const upcoming = appointments.filter(appt => new Date(appt.date + ' ' + appt.time) > new Date());
+            
+            const summaryBySpecialty = {};
+            upcoming.forEach(appt => {
+                summaryBySpecialty[appt.specialty] = (summaryBySpecialty[appt.specialty] || 0) + 1;
             });
 
-            // Webinar Accordion Events
-            elements.webinarHeaders.forEach(header => {
-                header.addEventListener('click', () => WebinarAccordion.toggleDetails(header));
+            let html = '<ul>';
+            for (const [specialty, count] of Object.entries(summaryBySpecialty)) {
+                html += `
+                    <li>
+                        <span class="specialty-color" style="background-color: ${specialties[specialty].color}"></span>
+                        ${specialty} (${specialties[specialty].doctor}): ${count}
+                    </li>
+                `;
+            }
+            html += '</ul>';
+            summaryContent.innerHTML = html || 'No upcoming appointments';
+        }
+
+        function updateCalendar() {
+            const month = parseInt(document.getElementById('monthSelect').value);
+            const year = new Date().getFullYear();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const calendar = document.getElementById('calendar');
+            
+            let html = '<div class="calendar-grid">';
+            
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            days.forEach(day => {
+                html += `<div class="calendar-day" style="font-weight: bold">${day}</div>`;
             });
-        };
 
-        // Initialize Application
-        const initApp = () => {
-            Carousel.init();
-            initEventListeners();
-        };
+            for (let i = 0; i < firstDay.getDay(); i++) {
+                html += '<div class="calendar-day"></div>';
+            }
 
-        initApp();
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                html += `
+                    <div class="calendar-day" tabindex="0" onclick="toggleTimeSlots(event, '${dateStr}')" onkeydown="handleCalendarKey(event, '${dateStr}')">
+                        ${day}
+                        <div class="time-slots" id="slots-${dateStr}">
+                            ${timeSlots.map((time, index) => {
+                                const isBooked = appointments.some(appt => appt.date === dateStr && appt.time === time);
+                                return `
+                                    <div class="time-slot ${isBooked ? 'booked' : 'available'}" 
+                                         tabindex="${isBooked ? '-1' : '0'}"
+                                         onclick="${!isBooked ? `selectSlot('${dateStr}', '${time}')` : ''}"
+                                         onkeydown="${!isBooked ? `handleSlotKey(event, '${dateStr}', '${time}')` : ''}">
+                                        ${time} ${isBooked ? '⛔' : '✓'}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            calendar.innerHTML = html;
+        }
+
+        function handleCalendarKey(event, date) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                toggleTimeSlots(event, date);
+            }
+        }
+
+        function handleSlotKey(event, date, time) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                selectSlot(date, time);
+            }
+        }
+
+        function toggleTimeSlots(event, date) {
+            const slots = document.getElementById(`slots-${date}`);
+            if (slots.style.display === 'block') {
+                slots.style.display = 'none';
+            } else {
+                document.querySelectorAll('.time-slots').forEach(s => s.style.display = 'none');
+                slots.style.display = 'block';
+                slots.style.left = `${event.target.offsetLeft}px`;
+                slots.style.top = `${event.target.offsetTop + event.target.offsetHeight}px`;
+                slots.querySelector('.time-slot.available')?.focus();
+            }
+            event.stopPropagation();
+        }
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.time-slots').forEach(s => s.style.display = 'none');
+        });
+
+        function selectSlot(date, time) {
+            selectedDay = date;
+            document.getElementById('timeSelect').value = time;
+            document.querySelectorAll('.time-slots').forEach(s => s.style.display = 'none');
+        }
+
+        function bookAppointment() {
+            if (!selectedDay) {
+                alert('Please select a time slot');
+                return;
+            }
+
+            const time = document.getElementById('timeSelect').value;
+            const specialty = document.getElementById('specialtySelect').value || 'General';
+
+            if (appointments.some(appt => appt.date === selectedDay && appt.time === time)) {
+                alert('This time slot is already booked');
+                return;
+            }
+
+            const appointment = {
+                id: Date.now(),
+                date: selectedDay,
+                time: time,
+                specialty: specialty
+            };
+
+            appointments.push(appointment);
+            updateCalendar();
+            updateAppointments();
+            updateSummary();
+            selectedDay = null;
+        }
+
+        function updateAppointments() {
+            const list = document.getElementById('appointmentList');
+            const specialtyFilter = document.getElementById('specialtySelect').value;
+            list.innerHTML = '';
+
+            const filteredAppointments = specialtyFilter 
+                ? appointments.filter(appt => appt.specialty === specialtyFilter)
+                : appointments;
+
+            filteredAppointments.sort((a, b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time));
+            
+            filteredAppointments.forEach(appt => {
+                const date = new Date(appt.date);
+                const isUpcoming = new Date(appt.date + ' ' + appt.time) > new Date();
+                
+                const item = document.createElement('div');
+                item.className = 'appointment-item';
+                item.innerHTML = `
+                    <span ${isUpcoming ? 'style="font-weight: bold"' : ''}>
+                        <span class="specialty-color" style="background-color: ${specialties[appt.specialty].color}"></span>
+                        ${date.toLocaleDateString()} ${appt.time} - ${appt.specialty} (${specialties[appt.specialty].doctor})
+                    </span>
+                    <div>
+                        <button class="btn-primary" onclick="rescheduleAppointment(${appt.id})">Reschedule</button>
+                        <button class="btn-danger" onclick="cancelAppointment(${appt.id})">Cancel</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function cancelAppointment(id) {
+            if (confirm('Are you sure you want to cancel this appointment?')) {
+                appointments = appointments.filter(appt => appt.id !== id);
+                updateCalendar();
+                updateAppointments();
+                updateSummary();
+            }
+        }
+
+        function rescheduleAppointment(id) {
+            if (!selectedDay) {
+                alert('Please select a new time slot');
+                return;
+            }
+
+            const time = document.getElementById('timeSelect').value;
+            const existing = appointments.find(appt => appt.date === selectedDay && appt.time === time);
+            
+            if (existing && existing.id !== id) {
+                alert('This time slot is already booked');
+                return;
+            }
+
+            appointments = appointments.map(appt => {
+                if (appt.id === id) {
+                    return { ...appt, date: selectedDay, time: time };
+                }
+                return appt;
+            });
+
+            updateCalendar();
+            updateAppointments();
+            updateSummary();
+            selectedDay = null;
+        }
+
+        document.getElementById('monthSelect').value = new Date().getMonth();
+
+        // Keyboard navigation for form controls
+        document.querySelectorAll('select, button').forEach(element => {
+            element.setAttribute('tabindex', '0');
+        });
+
+        // Add Enter key support for login
+        document.getElementById('password').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
     </script>
 </body>
 </html>
