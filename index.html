@@ -3,742 +3,628 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Investment Portfolio Simulator</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <title>STEM Learning Platform</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
         }
 
         body {
-            background-color: #1a1a2e;
-            color: #e6e6e6;
             line-height: 1.6;
-            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
         }
 
-        .container {
-            max-width: 1400px;
+        /* Header and Navigation */
+        header {
+            background-color: #2c3e50;
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .search-bar {
+            flex-grow: 1;
+            margin: 0 2rem;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.5rem 2rem 0.5rem 1rem;
+            border: none;
+            border-radius: 20px;
+        }
+
+        .hamburger {
+            display: none;
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: #3498db;
+        }
+
+        /* Enhanced Carousel */
+        .carousel {
+            margin-top: 80px;
+            padding: 2rem;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .carousel-container {
+            display: flex;
+            position: relative;
+            height: 350px;
+        }
+
+        .carousel-item {
+            position: absolute;
+            width: 300px;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .carousel-item.active {
+            opacity: 1;
+            z-index: 2;
+        }
+
+        .carousel-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .carousel-controls {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            transform: translateY(-50%);
+            z-index: 3;
+        }
+
+        .carousel-button {
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 2rem;
+            background-color: #fff;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .filter-buttons {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background-color: #3498db;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .filter-btn.active {
+            background-color: #2c3e50;
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .testimonial-card {
+            background-color: #f5f5f5;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        /* Webinars */
+        .webinars {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .webinar-item {
+            background-color: white;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .webinar-header {
+            padding: 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .webinar-details {
+            padding: 1rem;
+            display: none;
+        }
+
+        .webinar-details.show {
+            display: block;
+        }
+
+        /* Infographics */
+        .infographics {
+            padding: 2rem;
+            background-color: #fff;
+            max-width: 1200px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
         }
 
-        .sidebar {
-            background: #16213e;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .card {
-            background: #16213e;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-
-        h1 {
-            color: #00adb5;
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            color: #00adb5;
-            margin-bottom: 15px;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #e6e6e6;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #0f3460;
-            border-radius: 5px;
-            background: #e6e6e6;
-            color: #1a1a2e;
-            font-size: 14px;
-        }
-
-        button {
-            background-color: #e94560;
-            color: #fff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #d32f2f;
-        }
-
-        .chart-container {
+        .info-card {
             position: relative;
-            height: 400px;
+            padding: 1rem;
+            text-align: center;
+            background-color: #3498db;
+            color: white;
+            border-radius: 8px;
+        }
+
+        .info-details {
+            position: absolute;
+            top: 100%;
+            left: 0;
             width: 100%;
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            padding: 1rem;
+            display: none;
+            z-index: 10;
+            border-radius: 0 0 8px 8px;
         }
 
-        .comparison-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        .info-card:hover .info-details {
+            display: block;
         }
 
-        .scenario-list, .suggestion-list, .news-list {
-            max-height: 200px;
-            overflow-y: auto;
+        /* Learning Path */
+        .learning-path {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        .scenario-item, .suggestion-item, .news-item {
-            padding: 10px;
-            border-bottom: 1px solid #0f3460;
-            color: #e6e6e6;
+        .path-container {
+            position: relative;
+            height: 200px;
         }
 
-        .scenario-item:hover, .suggestion-item:hover {
-            background-color: #0f3460;
+        .path-line {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background-color: #3498db;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .milestone {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #2c3e50;
+            border-radius: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
             cursor: pointer;
         }
 
-        .news-item {
-            margin-bottom: 10px;
+        .milestone-info {
+            position: absolute;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
+            width: 200px;
         }
 
-        .news-item h3 {
-            color: #00adb5;
-            font-size: 14px;
+        .milestone:hover .milestone-info {
+            display: block;
         }
 
-        .news-item p {
-            font-size: 12px;
-        }
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hamburger {
+                display: block;
+            }
 
-        .tab {
-            padding: 10px;
-            margin-bottom: 10px;
-            background: #0f3460;
-            border-radius: 5px;
+            nav {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: #2c3e50;
+            }
+
+            nav.active {
+                display: block;
+            }
+
+            nav ul {
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            nav ul li {
+                margin: 0.5rem 0;
+            }
+
+            .search-bar {
+                margin: 1rem 0;
+            }
+
+            .carousel-item {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="sidebar">
-            <h1>Portfolio Simulator</h1>
-            
-            <div class="input-group">
-                <label>Initial Investment ($)</label>
-                <input type="number" id="initialInvestment" value="10000">
+    <header>
+        <div class="nav-container">
+            <div class="logo">STEM Learn</div>
+            <div class="search-bar">
+                <input type="text" placeholder="Search for courses...">
             </div>
-
-            <div class="tab">
-                <h2>Portfolio Setup</h2>
-                <div class="input-group">
-                    <label>Asset Allocation</label>
-                    <select id="assetSelect">
-                        <option value="AAPL">Apple (AAPL)</option>
-                        <option value="MSFT">Microsoft (MSFT)</option>
-                        <option value="TSLA">Tesla (TSLA)</option>
-                        <option value="^TNX">10-Year Treasury (^TNX)</option>
-                        <option value="BTC-USD">Bitcoin (BTC-USD)</option>
-                        <option value="ETH-USD">Ethereum (ETH-USD)</option>
-                        <option value="XRP-USD">Ripple (XRP-USD)</option>
-                        <option value="LTC-USD">Litecoin (LTC-USD)</option>
-                        <option value="BCH-USD">Bitcoin Cash (BCH-USD)</option>
-                        <option value="ADA-USD">Cardano (ADA-USD)</option>
-                        <option value="DOT-USD">Polkadot (DOT-USD)</option>
-                        <option value="LINK-USD">Chainlink (LINK-USD)</option>
-                        <option value="XLM-USD">Stellar (XLM-USD)</option>
-                        <option value="DOGE-USD">Dogecoin (DOGE-USD)</option>
-                    </select>
-                    <input type="number" id="allocationPercent" placeholder="Percentage">
-                    <button onclick="addAsset()">Add Asset</button>
-                </div>
-            </div>
-
-            <div class="tab">
-                <h2>Macroeconomic Factors</h2>
-                <div class="input-group">
-                    <label>Interest Rate (%)</label>
-                    <input type="number" id="interestRate" step="0.1">
-                    <label>Inflation Rate (%)</label>
-                    <input type="number" id="inflationRate" step="0.1">
-                    <label>Market Volatility (%)</label>
-                    <input type="number" id="volatility" step="1">
-                    <label>Time Horizon (years)</label>
-                    <input type="number" id="timeHorizon" value="10">
-                </div>
-            </div>
-
-            <div class="tab">
-                <h2>PPF Analysis</h2>
-                <div class="input-group">
-                    <label>Asset 1</label>
-                    <select id="ppfAsset1" onchange="updatePPF()">
-                        <option value="AAPL">Apple (AAPL)</option>
-                        <option value="MSFT">Microsoft (MSFT)</option>
-                        <option value="TSLA">Tesla (TSLA)</option>
-                        <option value="^TNX">10-Year Treasury (^TNX)</option>
-                        <option value="BTC-USD">Bitcoin (BTC-USD)</option>
-                        <option value="ETH-USD">Ethereum (ETH-USD)</option>
-                    </select>
-                    <label>Asset 2</label>
-                    <select id="ppfAsset2" onchange="updatePPF()">
-                        <option value="MSFT">Microsoft (MSFT)</option>
-                        <option value="AAPL">Apple (AAPL)</option>
-                        <option value="TSLA">Tesla (TSLA)</option>
-                        <option value="^TNX">10-Year Treasury (^TNX)</option>
-                        <option value="BTC-USD">Bitcoin (BTC-USD)</option>
-                        <option value="ETH-USD">Ethereum (ETH-USD)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="tab">
-                <h2>Suggestions</h2>
-                <div class="input-group">
-                    <label>Risk Profile</label>
-                    <select id="riskProfile" onchange="suggestPortfolio()">
-                        <option value="low">Low Risk</option>
-                        <option value="medium">Medium Risk</option>
-                        <option value="high">High Risk</option>
-                    </select>
-                </div>
-                <div class="suggestion-list" id="suggestionList"></div>
-            </div>
-
-            <button onclick="runSimulation()">Run Simulation</button>
-            <button onclick="saveScenario()">Save Scenario</button>
-
-            <h2>Saved Scenarios</h2>
-            <div class="scenario-list" id="scenarioList"></div>
+            <div class="hamburger">☰</div>
+            <nav>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Courses</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
         </div>
+    </header>
 
-        <div class="main-content">
-            <div class="card">
-                <h2>Portfolio Growth</h2>
-                <div class="chart-container">
-                    <canvas id="growthChart"></canvas>
-                </div>
+    <section class="carousel">
+        <div class="carousel-container">
+            <div class="carousel-item" data-src="https://via.placeholder.com/300x200?text=Robotics">
+                <img loading="lazy" alt="Robotics">
+                <h3>Robotics</h3>
+                <p>Learn to build and program robots</p>
             </div>
-
-            <div class="card comparison-container">
-                <div>
-                    <h2>Optimal Strategy</h2>
-                    <div class="chart-container">
-                        <canvas id="optimalChart"></canvas>
-                    </div>
-                </div>
-                <div>
-                    <h2>Current Strategy</h2>
-                    <div class="chart-container">
-                        <canvas id="currentChart"></canvas>
-                    </div>
-                </div>
+            <div class="carousel-item" data-src="https://via.placeholder.com/300x200?text=Programming">
+                <img loading="lazy" alt="Programming">
+                <h3>Programming</h3>
+                <p>Master coding fundamentals</p>
             </div>
-
-            <div class="card">
-                <h2>Production Possibility Frontier</h2>
-                <div class="chart-container">
-                    <canvas id="ppfChart"></canvas>
-                </div>
+            <div class="carousel-item" data-src="https://via.placeholder.com/300x200?text=Mathematics">
+                <img loading="lazy" alt="Mathematics">
+                <h3>Mathematics</h3>
+                <p>Explore advanced math concepts</p>
             </div>
-
-            <div class="card">
-                <h2>Portfolio Summary</h2>
-                <div id="portfolioSummary"></div>
-            </div>
-
-            <div class="card">
-                <h2>Financial News</h2>
-                <div class="news-list" id="newsList"></div>
+            <div class="carousel-item" data-src="https://via.placeholder.com/300x200?text=Science">
+                <img loading="lazy" alt="Science">
+                <h3>Science</h3>
+                <p>Discover scientific principles</p>
             </div>
         </div>
-    </div>
+        <div class="carousel-controls">
+            <button class="carousel-button prev">❮</button>
+            <button class="carousel-button next">❯</button>
+        </div>
+    </section>
+
+    <section class="testimonials">
+        <h2>Student Success Stories</h2>
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="robotics">Robotics</button>
+            <button class="filter-btn" data-filter="programming">Programming</button>
+            <button class="filter-btn" data-filter="math">Mathematics</button>
+        </div>
+        <div class="testimonial-grid">
+            <div class="testimonial-card" data-category="robotics">
+                <p>"The robotics course transformed my career!"</p>
+                <p>- Sarah J.</p>
+            </div>
+            <div class="testimonial-card" data-category="programming">
+                <p>"I landed my dream job thanks to the coding skills I learned."</p>
+                <p>- Michael R.</p>
+            </div>
+            <div class="testimonial-card" data-category="math">
+                <p>"The math course made complex concepts so clear."</p>
+                <p>- Emily T.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="webinars">
+        <h2>Upcoming Webinars</h2>
+        <div class="webinar-item">
+            <div class="webinar-header">
+                <h3>Introduction to Robotics</h3>
+                <span>▼</span>
+            </div>
+            <div class="webinar-details">
+                <p>Date: May 15, 2024</p>
+                <p>Time: 2:00 PM EST</p>
+                <p>Learn the basics of robotics engineering</p>
+            </div>
+        </div>
+        <div class="webinar-item">
+            <div class="webinar-header">
+                <h3>Python Programming Basics</h3>
+                <span>▼</span>
+            </div>
+            <div class="webinar-details">
+                <p>Date: May 20, 2024</p>
+                <p>Time: 3:00 PM EST</p>
+                <p>Get started with Python programming</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="infographics">
+        <h2>Learning Impact</h2>
+        <div class="info-card">
+            <h3>95%</h3>
+            <p>Course Completion Rate</p>
+            <div class="info-details">
+                <p>95% of our students complete their courses successfully</p>
+            </div>
+        </div>
+        <div class="info-card">
+            <h3>80%</h3>
+            <p>Job Placement</p>
+            <div class="info-details">
+                <p>80% of graduates find STEM jobs within 6 months</p>
+            </div>
+        </div>
+        <div class="info-card">
+            <h3>10K+</h3>
+            <p>Active Students</p>
+            <div class="info-details">
+                <p>Join over 10,000 students learning with us</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="learning-path">
+        <h2>Your Learning Journey</h2>
+        <div class="path-container">
+            <div class="path-line"></div>
+            <div class="milestone" style="left: 20%;">
+                <div class="milestone-info">Start: Course Selection</div>
+            </div>
+            <div class="milestone" style="left: 40%;">
+                <div class="milestone-info">Core Concepts</div>
+            </div>
+            <div class="milestone" style="left: 60%;">
+                <div class="milestone-info">Projects & Practice</div>
+            </div>
+            <div class="milestone" style="left: 80%;">
+                <div class="milestone-info">Certification</div>
+            </div>
+        </div>
+    </section>
 
     <script>
-        let portfolio = [];
-        let savedScenarios = [];
-        let growthChart, optimalChart, currentChart, ppfChart;
+        // DOM Elements Cache
+        const elements = {
+            hamburger: document.querySelector('.hamburger'),
+            nav: document.querySelector('nav'),
+            carousel: document.querySelector('.carousel'),
+            carouselItems: document.querySelectorAll('.carousel-item'),
+            prevButton: document.querySelector('.prev'),
+            nextButton: document.querySelector('.next'),
+            filterButtons: document.querySelectorAll('.filter-btn'),
+            testimonials: document.querySelectorAll('.testimonial-card'),
+            webinarHeaders: document.querySelectorAll('.webinar-header')
+        };
 
-        // Initialize charts
-        function initializeCharts() {
-            growthChart = new Chart(document.getElementById('growthChart'), {
-                type: 'line',
-                data: { datasets: [] },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: false, grid: { color: '#0f3460' } },
-                        x: { grid: { color: '#0f3460' } }
-                    }
+        // Menu Toggle Module
+        const MenuToggle = {
+            toggleNav() {
+                elements.nav.classList.toggle('active');
+            },
+            handleResize() {
+                if (window.innerWidth > 768 && elements.nav.classList.contains('active')) {
+                    elements.nav.classList.remove('active');
                 }
-            });
-
-            optimalChart = new Chart(document.getElementById('optimalChart'), {
-                type: 'line',
-                data: { datasets: [] },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: false, grid: { color: '#0f3460' } },
-                        x: { grid: { color: '#0f3460' } }
-                    }
-                }
-            });
-
-            currentChart = new Chart(document.getElementById('currentChart'), {
-                type: 'line',
-                data: { datasets: [] },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: false, grid: { color: '#0f3460' } },
-                        x: { grid: { color: '#0f3460' } }
-                    }
-                }
-            });
-
-            ppfChart = new Chart(document.getElementById('ppfChart'), {
-                type: 'scatter',
-                data: { datasets: [] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'Asset 1 Return', color: '#e6e6e6' },
-                            grid: { color: '#0f3460' }
-                        },
-                        y: {
-                            title: { display: true, text: 'Asset 2 Return', color: '#e6e6e6' },
-                            grid: { color: '#0f3460' }
-                        }
-                    }
-                }
-            });
-        }
-
-        async function fetchAssetData(symbol) {
-            try {
-                const response = await axios.get(
-                    `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`,
-                    {
-                        params: {
-                            range: '5y',
-                            interval: '1mo'
-                        }
-                    }
-                );
-                return response.data.chart.result[0].indicators.quote[0].close;
-            } catch (error) {
-                console.error('Error fetching asset data:', error);
-                return [];
             }
-        }
+        };
 
-        async function fetchMacroData() {
-            try {
-                const interestResponse = await axios.get(
-                    'https://api.db.nomics.world/v22/series/FRED/DGS10?format=json'
-                );
-                const interestData = interestResponse.data.dataset.data.map(d => d[1]);
-                const interestAvg = interestData.slice(0, 60).reduce((a, b) => a + b) / 60;
+        // Carousel Module
+        const Carousel = {
+            currentIndex: 0,
+            touchStartX: 0,
+            touchMoveX: 0,
+            isDragging: false,
+            autoSlideInterval: null,
 
-                const inflationResponse = await axios.get(
-                    'https://api.db.nomics.world/v22/series/FRED/CPIAUCSL?format=json'
-                );
-                const inflationData = inflationResponse.data.dataset.data.map(d => d[1]);
-                const inflationRates = [];
-                for (let i = 1; i < inflationData.length; i++) {
-                    inflationRates.push(((inflationData[i] - inflationData[i-1]) / inflationData[i-1]) * 100);
-                }
-                const inflationAvg = inflationRates.slice(0, 60).reduce((a, b) => a + b) / 60;
+            showSlide(index) {
+                if (index >= elements.carouselItems.length) index = 0;
+                if (index < 0) index = elements.carouselItems.length - 1;
 
-                document.getElementById('interestRate').value = interestAvg.toFixed(2);
-                document.getElementById('inflationRate').value = inflationAvg.toFixed(2);
-                document.getElementById('volatility').value = '15';
-            } catch (error) {
-                console.error('Error fetching macro data:', error);
-                document.getElementById('interestRate').value = '2.5';
-                document.getElementById('inflationRate').value = '2.0';
-                document.getElementById('volatility').value = '15';
-            }
-        }
-
-        async function fetchFinancialNews() {
-            try {
-                // Using NewsAPI as an example (you'll need to get your own API key)
-                const response = await axios.get(
-                    'https://newsapi.org/v2/everything',
-                    {
-                        params: {
-                            q: 'finance OR economics OR cryptocurrency OR stocks',
-                            language: 'en',
-                            sortBy: 'publishedAt',
-                            apiKey: 'YOUR_NEWSAPI_KEY' // Replace with your NewsAPI key
-                        }
+                elements.carouselItems.forEach((item, i) => {
+                    item.classList.remove('active');
+                    if (i === index) {
+                        item.classList.add('active');
+                        const img = item.querySelector('img');
+                        if (!img.src) img.src = item.dataset.src;
                     }
-                );
+                });
+                this.currentIndex = index;
+            },
 
-                const articles = response.data.articles.slice(0, 5);
-                const newsList = document.getElementById('newsList');
-                newsList.innerHTML = articles.map(article => {
-                    // Simple keyword matching for affected assets
-                    const affectedAssets = [];
-                    const content = (article.title + ' ' + article.description).toLowerCase();
-                    const availableAssets = [
-                        'AAPL', 'MSFT', 'TSLA', '^TNX',
-                        'BTC-USD', 'ETH-USD', 'XRP-USD', 'LTC-USD',
-                        'BCH-USD', 'ADA-USD', 'DOT-USD', 'LINK-USD',
-                        'XLM-USD', 'DOGE-USD'
-                    ];
+            nextSlide() {
+                this.showSlide(this.currentIndex + 1);
+            },
 
-                    availableAssets.forEach(asset => {
-                        if (content.includes(asset.toLowerCase().replace('-usd', ''))) {
-                            affectedAssets.push(asset);
-                        }
-                    });
+            prevSlide() {
+                this.showSlide(this.currentIndex - 1);
+            },
 
-                    return `
-                        <div class="news-item">
-                            <h3>${article.title}</h3>
-                            <p>${article.description}</p>
-                            <p>Affected Assets: ${affectedAssets.length > 0 ? affectedAssets.join(', ') : 'None'}</p>
-                            <p>Published: ${new Date(article.publishedAt).toLocaleString()}</p>
-                        </div>
-                    `;
-                }).join('');
-            } catch (error) {
-                console.error('Error fetching news:', error);
-                document.getElementById('newsList').innerHTML = `
-                    <div class="news-item">
-                        <p>Unable to fetch news at this time.</p>
-                    </div>
-                `;
+            startAutoSlide() {
+                this.autoSlideInterval = setInterval(() => this.nextSlide(), 5000);
+            },
+
+            stopAutoSlide() {
+                clearInterval(this.autoSlideInterval);
+            },
+
+            handleTouchStart(e) {
+                this.touchStartX = e.touches[0].clientX;
+                this.isDragging = true;
+                this.stopAutoSlide();
+            },
+
+            handleTouchMove(e) {
+                if (!this.isDragging) return;
+                this.touchMoveX = e.touches[0].clientX;
+            },
+
+            handleTouchEnd() {
+                if (!this.isDragging) return;
+                this.isDragging = false;
+                const diff = this.touchStartX - this.touchMoveX;
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) this.nextSlide();
+                    else this.prevSlide();
+                }
+                this.startAutoSlide();
+            },
+
+            init() {
+                this.showSlide(0);
+                this.startAutoSlide();
             }
-        }
+        };
 
-        function addAsset() {
-            const symbol = document.getElementById('assetSelect').value;
-            const percent = parseFloat(document.getElementById('allocationPercent').value);
-            
-            if (percent && percent > 0 && percent <= 100) {
-                portfolio.push({ symbol, allocation: percent / 100 });
-                document.getElementById('allocationPercent').value = '';
-                suggestPortfolio();
-                updatePPF();
-            }
-        }
+        // Testimonial Filter Module
+        const TestimonialFilter = {
+            filterTestimonials(filter) {
+                elements.filterButtons.forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
 
-        async function updatePPF() {
-            const asset1 = document.getElementById('ppfAsset1').value;
-            const asset2 = document.getElementById('ppfAsset2').value;
-
-            if (asset1 === asset2) return;
-
-            const data1 = await fetchAssetData(asset1);
-            const data2 = await fetchAssetData(asset2);
-
-            if (!data1.length || !data2.length) return;
-
-            const returns1 = calculateReturns(data1);
-            const returns2 = calculateReturns(data2);
-
-            // Generate PPF points
-            const ppfPoints = [];
-            for (let w1 = 0; w1 <= 1; w1 += 0.1) {
-                const w2 = 1 - w1;
-                const portfolioReturn1 = w1 * returns1.mean;
-                const portfolioReturn2 = w2 * returns2.mean;
-                ppfPoints.push({
-                    x: portfolioReturn1 * 100,
-                    y: portfolioReturn2 * 100
+                elements.testimonials.forEach(testimonial => {
+                    testimonial.style.display = filter === 'all' || 
+                        testimonial.dataset.category === filter ? 'block' : 'none';
                 });
             }
+        };
 
-            ppfChart.data = {
-                datasets: [{
-                    label: 'PPF Curve',
-                    data: ppfPoints,
-                    borderColor: '#f8b500',
-                    fill: false,
-                    showLine: true
-                }],
-                labels: ['PPF']
-            };
-
-            ppfChart.options.scales.x.title.text = `${asset1} Return (%)`;
-            ppfChart.options.scales.y.title.text = `${asset2} Return (%)`;
-            ppfChart.update();
-        }
-
-        function calculateReturns(data) {
-            const returns = [];
-            for (let i = 1; i < data.length; i++) {
-                returns.push((data[i] - data[i-1]) / data[i-1]);
+        // Webinar Accordion Module
+        const WebinarAccordion = {
+            toggleDetails(header) {
+                const details = header.nextElementSibling;
+                details.classList.toggle('show');
+                const arrow = header.querySelector('span');
+                arrow.textContent = details.classList.contains('show') ? '▲' : '▼';
             }
-            const mean = returns.reduce((a, b) => a + b) / returns.length;
-            return { mean, returns };
-        }
+        };
 
-        async function runSimulation() {
-            const initialInvestment = parseFloat(document.getElementById('initialInvestment').value);
-            const interestRate = parseFloat(document.getElementById('interestRate').value) / 100;
-            const inflationRate = parseFloat(document.getElementById('inflationRate').value) / 100;
-            const volatility = parseFloat(document.getElementById('volatility').value) / 100;
-            const timeHorizon = parseInt(document.getElementById('timeHorizon').value);
+        // Event Listeners
+        const initEventListeners = () => {
+            // Menu Toggle Events
+            elements.hamburger.addEventListener('click', MenuToggle.toggleNav);
+            window.addEventListener('resize', MenuToggle.handleResize);
 
-            const assetData = {};
-            for (let asset of portfolio) {
-                assetData[asset.symbol] = await fetchAssetData(asset.symbol);
-            }
+            // Carousel Events
+            elements.prevButton.addEventListener('click', () => Carousel.prevSlide());
+            elements.nextButton.addEventListener('click', () => Carousel.nextSlide());
+            elements.carousel.addEventListener('touchstart', (e) => Carousel.handleTouchStart(e));
+            elements.carousel.addEventListener('touchmove', (e) => Carousel.handleTouchMove(e));
+            elements.carousel.addEventListener('touchend', () => Carousel.handleTouchEnd());
+            elements.carousel.addEventListener('mouseenter', () => Carousel.stopAutoSlide());
+            elements.carousel.addEventListener('mouseleave', () => Carousel.startAutoSlide());
 
-            const growthData = simulatePortfolio(
-                initialInvestment,
-                portfolio,
-                assetData,
-                interestRate,
-                inflationRate,
-                volatility,
-                timeHorizon
-            );
-
-            updateCharts(growthData, timeHorizon);
-            updateSummary(growthData);
-        }
-
-        function simulatePortfolio(initial, portfolio, assetData, interestRate, inflation, volatility, years) {
-            const returns = [];
-            let currentValue = initial;
-
-            for (let year = 0; year < years; year++) {
-                let yearReturn = 0;
-                for (let asset of portfolio) {
-                    const historicalReturns = assetData[asset.symbol];
-                    const avgReturn = calculateAverageReturn(historicalReturns);
-                    const randomFactor = (Math.random() - 0.5) * volatility;
-                    yearReturn += (avgReturn + randomFactor - inflation) * asset.allocation;
-                }
-                
-                currentValue *= (1 + yearReturn - interestRate);
-                returns.push(currentValue);
-            }
-
-            return returns;
-        }
-
-        function calculateAverageReturn(data) {
-            if (!data || data.length < 2) return 0.07;
-            const returns = [];
-            for (let i = 1; i < data.length; i++) {
-                returns.push((data[i] - data[i-1]) / data[i-1]);
-            }
-            return returns.reduce((a, b) => a + b) / returns.length;
-        }
-
-        function updateCharts(data, years) {
-            const labels = Array.from({ length: years }, (_, i) => `Year ${i + 1}`);
-            
-            growthChart.data = {
-                labels,
-                datasets: [{
-                    label: 'Portfolio Value',
-                    data: data,
-                    borderColor: '#e94560',
-                    fill: false
-                }]
-            };
-            growthChart.update();
-
-            const optimalData = data.map(v => v * 1.1);
-            optimalChart.data = {
-                labels,
-                datasets: [{
-                    label: 'Optimal Value',
-                    data: optimalData,
-                    borderColor: '#00adb5',
-                    fill: false
-                }]
-            };
-            optimalChart.update();
-
-            currentChart.data = {
-                labels,
-                datasets: [{
-                    label: 'Current Value',
-                    data: data,
-                    borderColor: '#f8b500',
-                    fill: false
-                }]
-            };
-            currentChart.update();
-        }
-
-        function updateSummary(data) {
-            const summary = document.getElementById('portfolioSummary');
-            const finalValue = data[data.length - 1];
-            const initial = parseFloat(document.getElementById('initialInvestment').value);
-            const totalReturn = ((finalValue - initial) / initial * 100).toFixed(2);
-            
-            summary.innerHTML = `
-                <p>Final Value: $${finalValue.toFixed(2)}</p>
-                <p>Total Return: ${totalReturn}%</p>
-                <p>Asset Allocation:</p>
-                <ul>
-                    ${portfolio.map(asset => `
-                        <li>${asset.symbol}: ${(asset.allocation * 100).toFixed(1)}%</li>
-                    `).join('')}
-                </ul>
-            `;
-        }
-
-        function saveScenario() {
-            const scenario = {
-                initial: document.getElementById('initialInvestment').value,
-                portfolio: [...portfolio],
-                interestRate: document.getElementById('interestRate').value,
-                inflationRate: document.getElementById('inflationRate').value,
-                volatility: document.getElementById('volatility').value,
-                timeHorizon: document.getElementById('timeHorizon').value,
-                name: `Scenario ${savedScenarios.length + 1}`
-            };
-            
-            savedScenarios.push(scenario);
-            updateScenarioList();
-        }
-
-        function updateScenarioList() {
-            const list = document.getElementById('scenarioList');
-            list.innerHTML = savedScenarios.map((scenario, index) => `
-                <div class="scenario-item" onclick="loadScenario(${index})">
-                    ${scenario.name}
-                </div>
-            `).join('');
-        }
-
-        function loadScenario(index) {
-            const scenario = savedScenarios[index];
-            document.getElementById('initialInvestment').value = scenario.initial;
-            document.getElementById('interestRate').value = scenario.interestRate;
-            document.getElementById('inflationRate').value = scenario.inflationRate;
-            document.getElementById('volatility').value = scenario.volatility;
-            document.getElementById('timeHorizon').value = scenario.timeHorizon;
-            portfolio = [...scenario.portfolio];
-            runSimulation();
-        }
-
-        function suggestPortfolio() {
-            const riskProfile = document.getElementById('riskProfile').value;
-            const suggestionList = document.getElementById('suggestionList');
-            let suggestedPortfolio;
-
-            const assetStats = {
-                'AAPL': { return: 0.15, risk: 0.25 },
-                'MSFT': { return: 0.12, risk: 0.20 },
-                'TSLA': { return: 0.20, risk: 0.35 },
-                '^TNX': { return: 0.03, risk: 0.05 },
-                'BTC-USD': { return: 0.30, risk: 0.50 },
-                'ETH-USD': { return: 0.25, risk: 0.45 },
-                'XRP-USD': { return: 0.22, risk: 0.40 },
-                'LTC-USD': { return: 0.20, risk: 0.38 },
-                'BCH-USD': { return: 0.23, risk: 0.42 },
-                'ADA-USD': { return: 0.18, risk: 0.35 },
-                'DOT-USD': { return: 0.19, risk: 0.37 },
-                'LINK-USD': { return: 0.21, risk: 0.39 },
-                'XLM-USD': { return: 0.17, risk: 0.34 },
-                'DOGE-USD': { return: 0.25, risk: 0.48 }
-            };
-
-            switch (riskProfile) {
-                case 'low':
-                    suggestedPortfolio = [
-                        { symbol: '^TNX', allocation: 0.70 },
-                        { symbol: 'MSFT', allocation: 0.20 },
-                        { symbol: 'AAPL', allocation: 0.10 }
-                    ];
-                    break;
-                case 'medium':
-                    suggestedPortfolio = [
-                        { symbol: '^TNX', allocation: 0.40 },
-                        { symbol: 'MSFT', allocation: 0.30 },
-                        { symbol: 'AAPL', allocation: 0.20 },
-                        { symbol: 'ETH-USD', allocation: 0.10 }
-                    ];
-                    break;
-                case 'high':
-                    suggestedPortfolio = [
-                        { symbol: 'BTC-USD', allocation: 0.30 },
-                        { symbol: 'TSLA', allocation: 0.30 },
-                        { symbol: 'ETH-USD', allocation: 0.20 },
-                        { symbol: 'AAPL', allocation: 0.20 }
-                    ];
-                    break;
-            }
-
-            let portfolioReturn = 0;
-            let portfolioRisk = 0;
-            suggestedPortfolio.forEach(asset => {
-                portfolioReturn += assetStats[asset.symbol].return * asset.allocation;
-                portfolioRisk += Math.pow(assetStats[asset.symbol].risk * asset.allocation, 2);
+            // Testimonial Filter Events
+            elements.filterButtons.forEach(button => {
+                button.addEventListener('click', () => 
+                    TestimonialFilter.filterTestimonials(button.dataset.filter));
             });
-            portfolioRisk = Math.sqrt(portfolioRisk);
 
-            suggestionList.innerHTML = `
-                <div class="suggestion-item">
-                    <p>Suggested Allocation:</p>
-                    <ul>
-                        ${suggestedPortfolio.map(asset => `
-                            <li>${asset.symbol}: ${(asset.allocation * 100).toFixed(1)}%</li>
-                        `).join('')}
-                    </ul>
-                    <p>Expected Return: ${(portfolioReturn * 100).toFixed(2)}%</p>
-                    <p>Portfolio Risk: ${(portfolioRisk * 100).toFixed(2)}%</p>
-                    <button onclick="applySuggestion(${JSON.stringify(suggestedPortfolio)})">
-                        Apply Suggestion
-                    </button>
-                </div>
-            `;
-        }
+            // Webinar Accordion Events
+            elements.webinarHeaders.forEach(header => {
+                header.addEventListener('click', () => WebinarAccordion.toggleDetails(header));
+            });
+        };
 
-        function applySuggestion(suggestedPortfolio) {
-            portfolio = JSON.parse(suggestedPortfolio);
-            runSimulation();
-            updatePPF();
-        }
+        // Initialize Application
+        const initApp = () => {
+            Carousel.init();
+            initEventListeners();
+        };
 
-        // Initialize the app
-        initializeCharts();
-        fetchMacroData().then(() => {
-            suggestPortfolio();
-            updatePPF();
-            fetchFinancialNews();
-        });
+        initApp();
     </script>
 </body>
 </html>
